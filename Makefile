@@ -8,7 +8,7 @@ EXEC1 = binder				# 1st executable name
 OBJECTS2 = server.o
 EXEC2 = server				# 2st executable name
 
-OBJECTS3 = client.o
+OBJECTS3 = client.o helpers.o sender.o
 EXEC3 = client				# 3rd executable name
 
 OBJECTS = ${OBJECTS1} ${OBJECTS2} ${OBJECTS3}				# all object files
