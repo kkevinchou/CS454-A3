@@ -1,5 +1,6 @@
-#include "rpcserver.hpp"
+#include "rpcserver.h"
 #include "helpers.h"
+#include "constants.h"
 
 int localSocketFd;
 int binderSocketFd;

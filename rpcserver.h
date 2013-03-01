@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 
+
 using namespace std;
 
 struct rpcFunctionKey
@@ -16,7 +17,7 @@ struct rpcFunctionKey
 
 bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r) 
 {
-	int c = strcmp(l,r);
+	int c = strcmp(l.name,r.name);
 	if(c == 0)
 	{
 		int i = 0;
@@ -57,7 +58,7 @@ bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r)
 
 bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r) 
 { 
-	int c = strcmp(l,r);
+	int c = strcmp(l.name,r.name);
 	if(c == 0)
 	{
 		int i = 0;
