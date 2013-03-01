@@ -11,15 +11,12 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <sstream>
+#include <signal.h>
 #include <map>
+#include "sender.h"
+#include "helpers.h"
 
 using namespace std;
-
-void error(string message)
-{
-    cerr << message << endl;
-    exit(-1);
-}
 
 void printServerSettings(int localSocketFd) {
     char localHostName[256];
@@ -30,31 +27,6 @@ void printServerSettings(int localSocketFd) {
     socklen_t len = sizeof(sin);
     getsockname(localSocketFd, (struct sockaddr *)&sin, &len);
     cout << "BINDER_PORT " << ntohs(sin.sin_port) << endl;
-}
-
-int acceptConnection(int localSocketFd) {
-    struct sockaddr_in clientAddress;
-    socklen_t clientAddressSize = sizeof(clientAddress);
-    int newSocketFd = accept(localSocketFd, (struct sockaddr *) &clientAddress, &clientAddressSize);
-
-    if (newSocketFd < 0)
-        error("ERROR: Failed to accept client connection");
-
-    return newSocketFd;
-}
-
-void listenOnSocket(int localSocketFd) {
-    struct sockaddr_in binderAddress;
-    memset((struct sockaddr_in *)&binderAddress, 0, sizeof(binderAddress));
-
-    binderAddress.sin_family = AF_INET;
-    binderAddress.sin_addr.s_addr = INADDR_ANY;
-    binderAddress.sin_port = 0;
-
-    if (bind(localSocketFd, (struct sockaddr *) &binderAddress, sizeof(binderAddress)) < 0)
-          error("ERROR: Failed to bind local socket");
-
-    listen(localSocketFd, 5);
 }
 
 void toTitleCase(string &inStr) {
@@ -135,36 +107,40 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
         cout << recvStr << endl;
         toTitleCase(processedStr);
 
-        unsigned int size = processedStr.length() + 1;
+        //
+        Sender s(clientSocketFd);
+        s.sendMessage(processedStr);
+        //
+        // unsigned int size = processedStr.length() + 1;
 
-        unsigned char sizeBytes[4];
-        unsigned char *sizeBytesP = sizeBytes;
-        const char *cstr = processedStr.c_str();
+        // unsigned char sizeBytes[4];
+        // unsigned char *sizeBytesP = sizeBytes;
+        // const char *cstr = processedStr.c_str();
 
-        sizeBytes[0] = (size >> 24) & 0xFF;
-        sizeBytes[1] = (size >> 16) & 0xFF;
-        sizeBytes[2] = (size >> 8) & 0xFF;
-        sizeBytes[3] = size & 0xFF;
+        // sizeBytes[0] = (size >> 24) & 0xFF;
+        // sizeBytes[1] = (size >> 16) & 0xFF;
+        // sizeBytes[2] = (size >> 8) & 0xFF;
+        // sizeBytes[3] = size & 0xFF;
 
-        if (send(clientSocketFd, sizeBytesP, 4, 0) < 0) {
-            error("ERROR: Failed sending to socket1");
-        }
+        // if (send(clientSocketFd, sizeBytesP, 4, 0) < 0) {
+        //     error("ERROR: Failed sending to socket1");
+        // }
 
-        unsigned int bytesLeftToSend = size;
+        // unsigned int bytesLeftToSend = size;
 
-        while(true) {
-            int bytesSent = send(clientSocketFd, cstr, bytesLeftToSend, 0);
+        // while(true) {
+        //     int bytesSent = send(clientSocketFd, cstr, bytesLeftToSend, 0);
 
-            if(bytesSent == 0) {
-                break;
-            }
-            else if (bytesSent < 0) {
-                error("ERROR: Failed sending to socket2");
-            }
+        //     if(bytesSent == 0) {
+        //         break;
+        //     }
+        //     else if (bytesSent < 0) {
+        //         error("ERROR: Failed sending to socket2");
+        //     }
 
-            bytesLeftToSend -= bytesSent;
-            cstr += bytesSent;
-        }
+        //     bytesLeftToSend -= bytesSent;
+        //     cstr += bytesSent;
+        // }
 
         delete buffer;
     }
@@ -177,6 +153,7 @@ int main(int argc, char *argv[])
         error("ERROR: Failed to open socket");
     }
 
+    signal(SIGPIPE, SIG_IGN);
     listenOnSocket(localSocketFd);
     printServerSettings(localSocketFd);
 

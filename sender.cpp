@@ -8,7 +8,7 @@ using namespace std;
 
 
 
-void Sender::sendMessage(string s)
+int Sender::sendMessage(string s)
 {
 	int n;
 
@@ -36,7 +36,8 @@ void Sender::sendMessage(string s)
 		}
         else if (n < 0)
         {
-            error("ERROR writing to socket for message: ");
+            // error("ERROR writing to socket for message: ");
+            return -1;
 		}
 
 		sizeSize -= n;
@@ -56,9 +57,9 @@ void Sender::sendMessage(string s)
 		}
         else if (n < 0)
         {
-            error("ERROR writing to socket for message: ");
+            // error("ERROR writing to socket for message: ");
+            return -1;
 		}
-
 
 		size -= n;
 		cstr += n;
@@ -67,7 +68,7 @@ void Sender::sendMessage(string s)
 
 		sleep(2);
 	}
-		        
+	return 0;
 }
 
 Sender::Sender(int socketFileDescriptor)

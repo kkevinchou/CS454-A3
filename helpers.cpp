@@ -57,3 +57,28 @@ int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPort
 
     return socketFileDescriptor;
 }
+
+void listenOnSocket(int localSocketFd) {
+    struct sockaddr_in binderAddress;
+    memset((struct sockaddr_in *)&binderAddress, 0, sizeof(binderAddress));
+
+    binderAddress.sin_family = AF_INET;
+    binderAddress.sin_addr.s_addr = INADDR_ANY;
+    binderAddress.sin_port = 0;
+
+    if (bind(localSocketFd, (struct sockaddr *) &binderAddress, sizeof(binderAddress)) < 0)
+          error("ERROR: Failed to bind local socket");
+
+    listen(localSocketFd, 5);
+}
+
+int acceptConnection(int localSocketFd) {
+    struct sockaddr_in clientAddress;
+    socklen_t clientAddressSize = sizeof(clientAddress);
+    int newSocketFd = accept(localSocketFd, (struct sockaddr *) &clientAddress, &clientAddressSize);
+
+    if (newSocketFd < 0)
+        error("ERROR: Failed to accept client connection");
+
+    return newSocketFd;
+}

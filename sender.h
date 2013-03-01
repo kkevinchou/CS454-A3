@@ -10,7 +10,7 @@ class Sender
 		int _sfd;
 	public:
 		Sender(int socketFileDescriptor);
-		void sendMessage(string s);
+		int sendMessage(string s);
 };
 
 
