@@ -11,11 +11,9 @@ Receiver::Receiver(int socketFileDescriptor)
 	_sfd = socketFileDescriptor;	
 }
 
-string Receiver::receiveMessage()
+unsigned int Receiver::receiveMessageSize()
 {
-	int n;
-	string msg = "";
-
+    int n;
     unsigned char sizeBuffer[4];
     unsigned int sizeSize = 4;
     unsigned char * sizeBufferP = sizeBuffer;
@@ -42,7 +40,12 @@ string Receiver::receiveMessage()
     }
 
     unsigned int messageSize = (sizeBuffer[0] << 24) + (sizeBuffer[1] << 16) + (sizeBuffer[2] << 8) + sizeBuffer[3];
-
+    return messageSize;
+}
+string Receiver::receiveMessageGivenSize(unsigned int messageSize)
+{
+    string msg = "";
+    int n;
     char buffer[messageSize];
     while(true)
     {
@@ -67,7 +70,10 @@ string Receiver::receiveMessage()
          if(messageSize <= 0) break;
 
     }
-
-    //cout << "- Received Message: " << msg << endl;
     return msg;
+}
+string Receiver::receiveMessage()
+{
+    unsigned int messageSize = receiveMessageSize();
+    return receiveMessageGivenSize(messageSize);
 }

@@ -10,6 +10,8 @@ class Receiver
 	public:
 		Receiver(int socketFileDescriptor);
 		string receiveMessage(); // THIS BLOCKS UNTIL A FULL MESSAGE IS RECEIVED. Returns NULL on failure
+		string receiveMessageGivenSize(unsigned int messageSize);
+		unsigned int receiveMessageSize();
 
 
 };
