@@ -59,49 +59,14 @@ string getStringFromBuffer(char buffer[], int n) {
 void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
     int bytesReceived;
 
+    Receiver receiver(clientSocketFd);
+
     if (chunkInfo[clientSocketFd] == 0) {
-        unsigned char *buffer = new unsigned char[4];
-        memset(buffer, 0, 4);
-        bytesReceived = recv(clientSocketFd, buffer, 4, 0);
-
-        unsigned int numBytes = (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + buffer[3];
+        unsigned int numByes = receiver.receiveMessageSize();
         chunkInfo[clientSocketFd] = numBytes;
-
-        if (bytesReceived < 0) {
-            error("ERROR: Failed to read from socket");
-        }
-
-        if (bytesReceived == 0) {
-            FD_CLR(clientSocketFd, master_set);
-            close(clientSocketFd);
-            delete buffer;
-            return;
-        }
-
-        delete buffer;
     } else {
-        int bufferSize = 256;
-        char *buffer = new char[bufferSize];
-        string recvStr;
-
-        while (chunkInfo[clientSocketFd] > 0) {
-            bytesReceived = recv(clientSocketFd, buffer, bufferSize, 0);
-            chunkInfo[clientSocketFd] -= bytesReceived;
-
-            if (bytesReceived < 0) {
-                error("ERROR: Failed to read from socket");
-            }
-
-            if (bytesReceived == 0) {
-                FD_CLR(clientSocketFd, master_set);
-                close(clientSocketFd);
-                return;
-            }
-
-            string stringChunk = getStringFromBuffer(buffer, bytesReceived);
-            recvStr += stringChunk;
-        }
-
+        string recvStr = receiver.receiveMessageGivenSize(chunkInfo[clientSocketFd]);
+        chunkInfo[clientSocketFd] = 0;
         string processedStr = recvStr;
 
         cout << recvStr << endl;
