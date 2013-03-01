@@ -13,7 +13,7 @@ EXEC3 = client				# 3rd executable name
 
 OBJECTS = ${OBJECTS1} ${OBJECTS2} ${OBJECTS3}				# all object files
 DEPENDS = ${OBJECTS:.o=.d}			# substitute ".o" with ".d"
-EXECS = ${EXEC1} ${EXEC2} ${EXEC2}				# all executables
+EXECS = ${EXEC1} ${EXEC2} ${EXEC3}				# all executables
 
 #############################################################
 
