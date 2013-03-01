@@ -31,14 +31,14 @@ int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPort
     socketFileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFileDescriptor < 0)
     {
-        error("ERROR while opening socket");
+        return -2;
     }
 
     server = gethostbyname(serverAddressString);
 
     if (server == NULL) {
 
-       error("ERROR: No such host");
+       return -3;
 
     }
 
@@ -53,7 +53,9 @@ int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPort
    // cout << "HOST: "<<serverAddressString << " PORT: " << serverPort<<endl;
 
     if (connect(socketFileDescriptor,(struct sockaddr *) &serverAddressStruct,sizeof(serverAddressStruct)) < 0)
-        error("ERROR while connecting");
+    {
+        return -4;
+    }
 
     return socketFileDescriptor;
 }
