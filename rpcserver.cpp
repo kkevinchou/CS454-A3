@@ -1,5 +1,7 @@
-#include "rpcserver.hpp"
+#include "rpcserver.h"
 #include "helpers.h"
+#include "constants.h"
+
 int rpcInit() {
     char * binderAddressString = getenv ("BINDER_ADDRESS");
     char * binderPortString = getenv("BINDER_PORT");
