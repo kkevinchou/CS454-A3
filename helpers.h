@@ -3,6 +3,15 @@
 
 #include <string>
 
+/*
+return values:
+0 - success
+-1 - error while using library functions, check errno
+-2 - error while opening socket
+-3 - no such host
+-4 - error while connecting 
+*/
+
 using namespace std;
 
 void error(string msg);
