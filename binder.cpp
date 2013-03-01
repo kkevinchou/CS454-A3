@@ -38,8 +38,6 @@ void printSettings(int localSocketFd) {
 }
 
 void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
-    int bytesReceived;
-
     Receiver receiver(clientSocketFd);
 
     if (chunkInfo[clientSocketFd] == 0) {

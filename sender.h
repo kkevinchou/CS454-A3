@@ -11,6 +11,7 @@ class Sender
 	public:
 		Sender(int socketFileDescriptor);
 		int sendMessage(string s);
+        int sendUnsignedInt(unsigned int i);
 };
 
 

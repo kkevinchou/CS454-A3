@@ -6,69 +6,71 @@
 
 using namespace std;
 
+int Sender::sendUnsignedInt(unsigned int i) {
+	unsigned char bytes[4];
+	unsigned char * bytesPtr = bytes;
 
+	bytes[0] = (i >> 24) & 0xFF;
+	bytes[1] = (i >> 16) & 0xFF;
+	bytes[2] = (i >> 8) & 0xFF;
+	bytes[3] = i & 0xFF;
+
+	int size = 4;
+	int numSentBytes = 0;
+
+	while(true)
+	{
+		// send the first 4 bytes
+		// keep sending until send returns 0
+		numSentBytes = send(_sfd, bytesPtr, size, 0);
+
+		if (numSentBytes == 0 || numSentBytes < 0)
+		{
+			break;
+		}
+
+		size -= numSentBytes;
+		bytesPtr += numSentBytes;
+
+		sleep(2);
+	}
+
+	return numSentBytes;
+}
 
 int Sender::sendMessage(string s)
 {
-	int n;
+	int sentBytes;
 
 	unsigned int size = s.size()+1;
 	const char * cstr = s.c_str();
 
-	unsigned char sizeBytes[4];
-	unsigned char * sizeBytesP = sizeBytes;
+	sentBytes = sendUnsignedInt(size);
 
-	sizeBytes[0] = (size >> 24) & 0xFF;
-	sizeBytes[1] = (size >> 16) & 0xFF;
-	sizeBytes[2] = (size >> 8) & 0xFF;
-	sizeBytes[3] = size & 0xFF;
-
-	int sizeSize = 4;
-
-	while(true)
+	if (sentBytes < 0)
 	{
-		//send the first 4 bytes
-		// keep sending until send returns 0
-		n = send(_sfd,sizeBytesP, sizeSize, 0);
-		if(n==0)
-		{
-			break;
-		}
-        else if (n < 0)
-        {
-            // error("ERROR writing to socket for message: ");
-            return -1;
-		}
-
-		sizeSize -= n;
-		sizeBytesP += n;
-
-		sleep(2);
+		return sentBytes;
 	}
 
 	while(true)
 	{
 		// send the message
 		// keep sending until send returns 0
-		n = send(_sfd,cstr, size, 0);
-		if(n==0)
+		sentBytes = send(_sfd, cstr, size, 0);
+
+		if(sentBytes == 0 || sentBytes < 0)
 		{
 			break;
 		}
-        else if (n < 0)
-        {
-            // error("ERROR writing to socket for message: ");
-            return -1;
-		}
 
-		size -= n;
-		cstr += n;
+		size -= sentBytes;
+		cstr += sentBytes;
 
 		if(size == 0) break;
 
 		sleep(2);
 	}
-	return 0;
+	return sentBytes;
 }
 
 Sender::Sender(int socketFileDescriptor)
