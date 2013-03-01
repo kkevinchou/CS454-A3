@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "rpcserver.hpp"
+#include "rpcserver.h"
 #include "constants.h"
 
 using namespace std;
@@ -63,9 +63,11 @@ int sumSkeleton(int * argTypes, void **args)
 		argType = argTypes[index];
 	}
 
-
+	int a = *((int*)(args[aIndex]));
+	int b = *((int*)(args[bIndex]));
+	int s = sum(a,b);
 	// do server function call
-	args[returnValueIndex] = (void *)(sum((int)(args[aIndex]), (int)(args[bIndex])));
+	*((int*)(args[returnValueIndex])) = s;
 	return 0; // success!
 }
 
@@ -73,11 +75,16 @@ int main()
 {
 	rpcInit();
 
+	// register sum
 	int argTypes[3];
 	argTypes[0] = (1 << ARG_INPUT) | (ARG_INT << 16);
 	argTypes[1] = (1 << ARG_INPUT) | (ARG_INT << 16);
 	argTypes[2] = (1 << ARG_OUTPUT) | (ARG_INT << 16);
-	int r = rpcRegister("sum", argTypes, sumSkeleton);
+
+	char *name = new char[4];
+	strcpy( name, "sum" );
+
+	int r = rpcRegister(name, argTypes, sumSkeleton);
 
 
 }
