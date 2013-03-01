@@ -107,40 +107,8 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
         cout << recvStr << endl;
         toTitleCase(processedStr);
 
-        //
         Sender s(clientSocketFd);
         s.sendMessage(processedStr);
-        //
-        // unsigned int size = processedStr.length() + 1;
-
-        // unsigned char sizeBytes[4];
-        // unsigned char *sizeBytesP = sizeBytes;
-        // const char *cstr = processedStr.c_str();
-
-        // sizeBytes[0] = (size >> 24) & 0xFF;
-        // sizeBytes[1] = (size >> 16) & 0xFF;
-        // sizeBytes[2] = (size >> 8) & 0xFF;
-        // sizeBytes[3] = size & 0xFF;
-
-        // if (send(clientSocketFd, sizeBytesP, 4, 0) < 0) {
-        //     error("ERROR: Failed sending to socket1");
-        // }
-
-        // unsigned int bytesLeftToSend = size;
-
-        // while(true) {
-        //     int bytesSent = send(clientSocketFd, cstr, bytesLeftToSend, 0);
-
-        //     if(bytesSent == 0) {
-        //         break;
-        //     }
-        //     else if (bytesSent < 0) {
-        //         error("ERROR: Failed sending to socket2");
-        //     }
-
-        //     bytesLeftToSend -= bytesSent;
-        //     cstr += bytesSent;
-        // }
 
         delete buffer;
     }
