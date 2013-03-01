@@ -24,38 +24,12 @@ void error(string message)
 void printServerSettings(int localSocketFd) {
     char localHostName[256];
     gethostname(localHostName, 256);
-    cout << "SERVER_ADDRESS " << localHostName << endl;
+    cout << "BINDER_ADDRESS " << localHostName << endl;
 
     struct sockaddr_in sin;
     socklen_t len = sizeof(sin);
     getsockname(localSocketFd, (struct sockaddr *)&sin, &len);
-    cout << "SERVER_PORT " << ntohs(sin.sin_port) << endl;
-}
-
-int waitForConnection(int localSocketFd, map<int, unsigned int> &chunkInfo) {
-    struct sockaddr_in serverAddress;
-    memset((struct sockaddr_in *)&serverAddress, 0, sizeof(serverAddress));
-
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
-    serverAddress.sin_port = 0;
-
-    if (bind(localSocketFd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
-          error("ERROR: Failed to bind local socket");
-
-    listen(localSocketFd, 5);
-    printServerSettings(localSocketFd);
-
-    struct sockaddr_in clientAddress;
-    socklen_t clientAddressSize = sizeof(clientAddress);
-    int newSocketFd = accept(localSocketFd, (struct sockaddr *) &clientAddress, &clientAddressSize);
-
-    chunkInfo[newSocketFd] = 0;
-
-    if (newSocketFd < 0)
-        error("ERROR: Failed to accept client connection");
-
-    return newSocketFd;
+    cout << "BINDER_PORT " << ntohs(sin.sin_port) << endl;
 }
 
 int acceptConnection(int localSocketFd) {
@@ -70,14 +44,14 @@ int acceptConnection(int localSocketFd) {
 }
 
 void listenOnSocket(int localSocketFd) {
-    struct sockaddr_in serverAddress;
-    memset((struct sockaddr_in *)&serverAddress, 0, sizeof(serverAddress));
+    struct sockaddr_in binderAddress;
+    memset((struct sockaddr_in *)&binderAddress, 0, sizeof(binderAddress));
 
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_addr.s_addr = INADDR_ANY;
-    serverAddress.sin_port = 0;
+    binderAddress.sin_family = AF_INET;
+    binderAddress.sin_addr.s_addr = INADDR_ANY;
+    binderAddress.sin_port = 0;
 
-    if (bind(localSocketFd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
+    if (bind(localSocketFd, (struct sockaddr *) &binderAddress, sizeof(binderAddress)) < 0)
           error("ERROR: Failed to bind local socket");
 
     listen(localSocketFd, 5);
