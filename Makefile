@@ -2,7 +2,7 @@ CXX = g++					# compiler
 CXXFLAGS = -g -Wall -Wno-unused-label -MMD -DTYPE="${TYPE}"  # compiler flags
 MAKEFILE_NAME = ${firstword ${MAKEFILE_LIST}}	# makefile name
 
-OBJECTS1 = binder.o sender.o helpers.o
+OBJECTS1 = binder.o sender.o helpers.o receiver.o
 EXEC1 = binder				# 1st executable name
 
 OBJECTS2 = server.o rpcserver.o helpers.o

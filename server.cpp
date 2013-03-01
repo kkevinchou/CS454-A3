@@ -44,18 +44,18 @@ int sumSkeleton(int * argTypes, void **args)
 
 				if(!aSet)
 				{
-					aIndex = index; 
+					aIndex = index;
 					aSet = true;
 				}
 				else if(!bSet)
-				{	
+				{
 					bIndex = index;
 					bSet = true;
 				}
 				else return -1;//to many arguments
 
 			}
-			
+
 		}
 
 
