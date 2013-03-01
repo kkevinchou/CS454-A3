@@ -16,9 +16,16 @@
 #include "sender.h"
 #include "helpers.h"
 
+#include "rpcserver.h" // for the typedef
+
 using namespace std;
 
-void printServerSettings(int localSocketFd) {
+struct location {
+    string id;
+    int port;
+};
+
+void printSettings(int localSocketFd) {
     char localHostName[256];
     gethostname(localHostName, 256);
     cout << "BINDER_ADDRESS " << localHostName << endl;
@@ -27,33 +34,6 @@ void printServerSettings(int localSocketFd) {
     socklen_t len = sizeof(sin);
     getsockname(localSocketFd, (struct sockaddr *)&sin, &len);
     cout << "BINDER_PORT " << ntohs(sin.sin_port) << endl;
-}
-
-void toTitleCase(string &inStr) {
-    bool capNext = true;
-
-    for (unsigned int i = 0; i < inStr.length(); i++) {
-        if (capNext && inStr[i] >= 97 && inStr[i] <= 122) {
-            inStr[i] -= 32;
-        }
-
-        if (inStr[i] == 32) {
-            capNext = true;
-        } else {
-            capNext = false;
-        }
-    }
-}
-
-string getStringFromBuffer(char buffer[], int n) {
-    char charStr[n + 1];
-    for (int i = 0; i < n; i++) {
-        charStr[i] = buffer[i];
-    }
-    charStr[n] = '\0';
-
-    string result = charStr;
-    return result;
 }
 
 void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
@@ -67,20 +47,17 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
     } else {
         string recvStr = receiver.receiveMessageGivenSize(chunkInfo[clientSocketFd]);
         chunkInfo[clientSocketFd] = 0;
-        string processedStr = recvStr;
 
         cout << recvStr << endl;
-        toTitleCase(processedStr);
 
         Sender s(clientSocketFd);
-        s.sendMessage(processedStr);
+        s.sendMessage(recvStr);
 
         delete buffer;
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int localSocketFd = createSocket();
     if (localSocketFd < 0) {
         error("ERROR: Failed to open socket");
@@ -88,7 +65,7 @@ int main(int argc, char *argv[])
 
     signal(SIGPIPE, SIG_IGN);
     listenOnSocket(localSocketFd);
-    printServerSettings(localSocketFd);
+    printSettings(localSocketFd);
 
     int max_fd = localSocketFd;
     fd_set master_set, working_set;
