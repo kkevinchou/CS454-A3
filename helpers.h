@@ -8,6 +8,8 @@ using namespace std;
 void error(string msg);
 int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPortString);
 
+int createSocket();
+
 // Server Helpers
 
 void listenOnSocket(int localSocketFd);

@@ -58,6 +58,10 @@ int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPort
     return socketFileDescriptor;
 }
 
+int createSocket() {
+    return socket(AF_INET, SOCK_STREAM, 0);
+}
+
 void listenOnSocket(int localSocketFd) {
     struct sockaddr_in binderAddress;
     memset((struct sockaddr_in *)&binderAddress, 0, sizeof(binderAddress));

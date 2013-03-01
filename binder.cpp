@@ -81,7 +81,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 
 int main(int argc, char *argv[])
 {
-    int localSocketFd = socket(AF_INET, SOCK_STREAM, 0);
+    int localSocketFd = createSocket();
     if (localSocketFd < 0) {
         error("ERROR: Failed to open socket");
     }
