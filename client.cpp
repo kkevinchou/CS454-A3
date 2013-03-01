@@ -7,6 +7,7 @@
 
 #include "helpers.h"
 #include "sender.h"
+#include "receiver.h"
 using namespace std;
 
 
@@ -22,6 +23,10 @@ int main()
 	int socketFileDescriptor = setupSocketAndReturnDescriptor(serverAddressString, serverPortString);
 
 	Sender s(socketFileDescriptor);
+	Receiver r(socketFileDescriptor);
 	s.sendMessage("Hi kevin");
+
+	string t = r.receiveMessage();
+	cout << "received: " << t << endl;
 	close(socketFileDescriptor);
 }
