@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <map>
 #include "sender.h"
+#include "receiver.h"
 #include "helpers.h"
 
 #include "rpcserver.h" // for the typedef
@@ -42,7 +43,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
     Receiver receiver(clientSocketFd);
 
     if (chunkInfo[clientSocketFd] == 0) {
-        unsigned int numByes = receiver.receiveMessageSize();
+        unsigned int numBytes = receiver.receiveMessageSize();
         chunkInfo[clientSocketFd] = numBytes;
     } else {
         string recvStr = receiver.receiveMessageGivenSize(chunkInfo[clientSocketFd]);
@@ -52,8 +53,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 
         Sender s(clientSocketFd);
         s.sendMessage(recvStr);
-
-        delete buffer;
     }
 }
 

@@ -6,22 +6,15 @@
 
 using namespace std;
 
-
-
-int Sender::sendMessage(string s)
+void Sender::sendUnsignedInt(unsigned int i)
 {
-	int n;
-
-	unsigned int size = s.size()+1;
-	const char * cstr = s.c_str();
-
 	unsigned char sizeBytes[4];
 	unsigned char * sizeBytesP = sizeBytes;
 
-	sizeBytes[0] = (size >> 24) & 0xFF;
-	sizeBytes[1] = (size >> 16) & 0xFF;
-	sizeBytes[2] = (size >> 8) & 0xFF;
-	sizeBytes[3] = size & 0xFF;
+	sizeBytes[0] = (i >> 24) & 0xFF;
+	sizeBytes[1] = (i >> 16) & 0xFF;
+	sizeBytes[2] = (i >> 8) & 0xFF;
+	sizeBytes[3] = i & 0xFF;
 
 	int sizeSize = 4;
 
@@ -29,8 +22,8 @@ int Sender::sendMessage(string s)
 	{
 		//send the first 4 bytes
 		// keep sending until send returns 0
-		n = send(_sfd,sizeBytesP, sizeSize, 0);
-		if(n==0)
+		n = send(_sfd, sizeBytesP, sizeSize, 0);
+		if (n == 0)
 		{
 			break;
 		}
@@ -45,6 +38,16 @@ int Sender::sendMessage(string s)
 
 		sleep(2);
 	}
+}
+
+int Sender::sendMessage(string s)
+{
+	int n;
+
+	unsigned int size = s.size()+1;
+	const char * cstr = s.c_str();
+
+	sendUnsignedInt(size);
 
 	while(true)
 	{
