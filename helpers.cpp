@@ -19,28 +19,28 @@ MessageType getMessageTypeFromInt(int i)
     MessageType ret = ERROR;
     switch(i)
     {
-        case 1: 
+        case 1:
             ret = REGISTER;
         break;
-        case 2: 
+        case 2:
             ret = LOC_REQUEST;
         break;
-        case 3: 
+        case 3:
             ret = LOC_SUCCESS;
         break;
-        case 4: 
+        case 4:
             ret = LOC_FAILURE;
         break;
-        case 5: 
+        case 5:
             ret = EXECUTE;
         break;
-        case 6: 
+        case 6:
             ret = EXECUTE_SUCCESS;
         break;
-        case 7: 
+        case 7:
             ret = EXECUTE_FAILURE;
         break;
-        case 8: 
+        case 8:
             ret = TERMINATE;
         break;
         default:
@@ -122,4 +122,18 @@ int acceptConnection(int localSocketFd) {
         error("ERROR: Failed to accept client connection");
 
     return newSocketFd;
+}
+
+short getPort(int localSocketFd) {
+    struct sockaddr_in sin;
+    socklen_t len = sizeof(sin);
+    getsockname(localSocketFd, (struct sockaddr *)&sin, &len);
+    return ntohs(sin.sin_port);
+}
+
+string getHostname() {
+    char localHostName[256];
+    gethostname(localHostName, 256);
+
+    return string(localHostName);
 }

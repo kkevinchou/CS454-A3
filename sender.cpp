@@ -10,10 +10,11 @@
 using namespace std;
 
 int Sender::sendArray(unsigned int length, char data[])
- {
-	 char * bytesPtr = data;
-	 unsigned int sentSize = length;
-	 int n;
+{
+ 	cerr << "MEOW" << endl;
+	char * bytesPtr = data;
+	unsigned int sentSize = length;
+	int n;
 	/* cout << "Sending size "<<length<<endl;
 	 cout << "Sending: ";
 	 for(int i = 0; i < length; i++)
@@ -86,16 +87,18 @@ char * Sender::addIntBufferToBuffer(int intBuf[], int numInts, char *bufferP) {
 
 int Sender::sendRegisterMessage(string serverID, short port, string name, int argTypesLength, int argTypes[])
 {
+	int typeSize = 4;
 	int serverIdSize = serverID.size() + 1;
 	int portSize = 4;
 	int nameSize = name.size() + 1;
 	int argTypesSize = argTypesLength;
 
- 	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesSize;
+ 	unsigned int messageSize = typeSize + serverIdSize + portSize + nameSize + argTypesSize;
 
  	char buffer[messageSize];
  	char *bufferP = buffer;
 
+ 	bufferP = addIntToBuffer(static_cast<int>(REGISTER), bufferP);
  	bufferP = addStringToBuffer(serverID, bufferP);
  	bufferP = addShortToBuffer(port, bufferP);
  	bufferP = addStringToBuffer(name, bufferP);

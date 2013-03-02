@@ -10,7 +10,7 @@ return values:
 -1 - error while using library functions, check errno
 -2 - error while opening socket
 -3 - no such host
--4 - error while connecting 
+-4 - error while connecting
 */
 
 using namespace std;
@@ -25,5 +25,7 @@ int createSocket();
 void listenOnSocket(int localSocketFd);
 int acceptConnection(int localSocketFd);
 MessageType getMessageTypeFromInt(int i);
+short getPort(int localSocketFd);
+string getHostname();
 
 #endif

@@ -6,22 +6,22 @@
 #include <stdio.h>
 #include <string.h>
 #include <map>
+#include "sender.h"
 using namespace std;
 
-int localSocketFd;
-int binderSocketFd;
+static int localSocketFd;
+static int binderSocketFd;
 
 struct rpcFunctionKey
-{ 
+{
 	char *name;
 	int *argTypes;
 	rpcFunctionKey(char *n, int *a) : name(n), argTypes(a){}
 };
 
-
 map<rpcFunctionKey, skeleton> registeredFunctions;
 
-bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r) 
+bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r)
 {
 	int c = strcmp(l.name,r.name);
 	if(c == 0)
@@ -31,8 +31,8 @@ bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r)
 		int rArgs = r.argTypes[i];
 		// structs with less args are smaller
 		// structs with the same args are the same
-		// structs with the same number args, 
-		// but different arg values, 
+		// structs with the same number args,
+		// but different arg values,
 		// the one with the smaller value is smaller
 		while(lArgs!= 0 && rArgs != 0)
 		{
@@ -43,7 +43,7 @@ bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r)
 			i++;
 			lArgs = l.argTypes[i];
 			rArgs = r.argTypes[i];
-		}	
+		}
 
 		if(rArgs == 0 && lArgs == 0)
 		{
@@ -62,8 +62,8 @@ bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r)
 	}
 }
 
-bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r) 
-{ 
+bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r)
+{
 	int c = strcmp(l.name,r.name);
 	if(c == 0)
 	{
@@ -72,8 +72,8 @@ bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r)
 		int rArgs = r.argTypes[i];
 		// structs with less args are smaller
 		// structs with the same args are the same
-		// structs with the same number args, 
-		// but different arg values, 
+		// structs with the same number args,
+		// but different arg values,
 		// the one with the smaller value is smaller
 		while(lArgs!= 0 && rArgs != 0)
 		{
@@ -84,7 +84,7 @@ bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r)
 			i++;
 			lArgs = l.argTypes[i];
 			rArgs = r.argTypes[i];
-		}	
+		}
 
 		if(rArgs == 0) // || lArgs == 0
 		{
@@ -135,18 +135,32 @@ int rpcInit() {
 // -1 - binder could not be found
 int rpcRegister(char *name, int *argTypes, skeleton f) {
 	// calls the binder, informing it that a server procedure
-	// with the indicated name and list of argument types is available at this server. 
+	// with the indicated name and list of argument types is available at this server.
 
-	// The result returned is 0 for a successful registration, positive for a warning 
-	// (e.g., this is the same as some previously registered procedure), or negative 
-	// for failure (e.g., could not locate binder). 
+	// The result returned is 0 for a successful registration, positive for a warning
+	// (e.g., this is the same as some previously registered procedure), or negative
+	// for failure (e.g., could not locate binder).
 
-	// The function also makes an entry in a local database, 
-	// associating the server skeleton with the name and list of argument types. 
+	// The function also makes an entry in a local database,
+	// associating the server skeleton with the name and list of argument types.
 	struct rpcFunctionKey k(name, argTypes);
 
 	if(registeredFunctions[k] != NULL) return 1;
 	registeredFunctions[k] = f;
+
+	string hostname = getHostname();
+	short port = getPort(localSocketFd);
+	string funcName = string(name);
+
+	Sender s(localSocketFd);
+
+	int argTypesLength = 0;
+
+	while (argTypes[argTypesLength++]) {
+	}
+	--argTypesLength;
+
+	s.sendRegisterMessage(hostname, port, funcName, argTypesLength, argTypes);
 
 	cout << "Successfully registered: "<< name << endl;
 
