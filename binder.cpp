@@ -108,8 +108,15 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < max_fd + 1; i++) {
             if (FD_ISSET(i, &working_set)) {
                 if (i != localSocketFd) {
-                    int clientSocketFd = i;
-                    handleRequest(clientSocketFd, &master_set, chunkInfo);
+                    int n = 0;
+                    ioctl(i, FIONREAD, &n);
+              
+                    if(n > 0)
+                    {
+                        int clientSocketFd = i;
+                        handleRequest(clientSocketFd, &master_set, chunkInfo);
+                    }
+                        
                 } else {
                     cout << "accept connection"<<endl;
                     int newSocketFd = acceptConnection(localSocketFd);
