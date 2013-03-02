@@ -38,6 +38,7 @@ void printSettings(int localSocketFd) {
 }
 
 void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
+    cout << "handle"<<endl;
     Receiver receiver(clientSocketFd);
 
     if (chunkInfo[clientSocketFd] == 0) {
@@ -115,6 +116,7 @@ int main(int argc, char *argv[]) {
                     int clientSocketFd = i;
                     handleRequest(clientSocketFd, &master_set, chunkInfo);
                 } else {
+                    cout << "accept connection"<<endl;
                     int newSocketFd = acceptConnection(localSocketFd);
                     max_fd = newSocketFd;
                     FD_SET(newSocketFd, &master_set);
