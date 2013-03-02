@@ -37,9 +37,11 @@ void printSettings(int localSocketFd) {
     cout << "BINDER_PORT " << ntohs(sin.sin_port) << endl;
 }
 
+extern bool debug;
+
 void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
-    cout << "handle"<<endl;
     Receiver receiver(clientSocketFd);
+    bool closed = false;
 
     if (chunkInfo[clientSocketFd] == 0) {
         int numBytes = receiver.receiveMessageSize();
@@ -49,32 +51,41 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
         {
             unsigned int nb = (unsigned int)numBytes;
             chunkInfo[clientSocketFd] = nb;
-            if(receiver.receiveMessageType() == REGISTER) cout << "Received REGISTER message"<<endl;
+
+
+            // TODO : HANDLE OTHER MESSAGE TYPES
+            if (receiver.receiveMessageType() == REGISTER) {
+                cout << "Received REGISTER message"<<endl;
+            } else {
+                closed = true;
+            }
         }
         else
         {
-            //failed
-            chunkInfo[clientSocketFd] = 0;
+            closed = true;
         }
     } else {
         unsigned int size = chunkInfo[clientSocketFd];
         char buffer[size];
-        if(receiver.receiveMessageGivenSize(size, buffer) == 0)
+        if (receiver.receiveMessageGivenSize(size, buffer) == 0)
         {
             chunkInfo[clientSocketFd] = 0;
-            string recvStr(buffer, buffer+size);
-            cout << recvStr << endl;
+            // string recvStr(buffer, buffer+size);
+            // cout << recvStr << endl;
 
-            Sender s(clientSocketFd);
-            s.sendMessage(recvStr);
+            // Sender s(clientSocketFd);
+            // s.sendMessage(recvStr);
         }
         else
         {
-            //failed
-            chunkInfo[clientSocketFd] = 0;
+            closed = true;
         }
 
-
+        if (closed) {
+            chunkInfo[clientSocketFd] = 0;
+            FD_CLR(clientSocketFd, master_set);
+            close(clientSocketFd);
+        }
     }
 }
 
@@ -108,15 +119,8 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < max_fd + 1; i++) {
             if (FD_ISSET(i, &working_set)) {
                 if (i != localSocketFd) {
-                    int n = 0;
-                    ioctl(i, FIONREAD, &n);
-              
-                    if(n > 0)
-                    {
-                        int clientSocketFd = i;
-                        handleRequest(clientSocketFd, &master_set, chunkInfo);
-                    }
-                        
+                    int clientSocketFd = i;
+                    handleRequest(clientSocketFd, &master_set, chunkInfo);
                 } else {
                     cout << "accept connection"<<endl;
                     int newSocketFd = acceptConnection(localSocketFd);
