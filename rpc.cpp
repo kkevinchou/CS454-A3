@@ -113,6 +113,7 @@ int rpcInit() {
     if(binderAddressString == NULL) error("ERROR: BINDER_ADDRESS environment variable not set.");
     if(binderPortString == NULL) error("ERROR: BINDER_PORT environment variable not set.");
 
+    cerr << "connecting to : " << binderAddressString << ":" << binderPortString << endl;
     binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
     if (binderSocketFd < 0) {
@@ -152,7 +153,7 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	short port = getPort(localSocketFd);
 	string funcName = string(name);
 
-	Sender s(localSocketFd);
+	Sender s(binderSocketFd);
 
 	int argTypesLength = 0;
 
