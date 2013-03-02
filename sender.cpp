@@ -68,6 +68,16 @@ char * Sender::addIntToBuffer(int i, char *bufferP)
 	return bufferP + 4;
 }
 
+char * Sender::addUnsignedIntToBuffer(unsigned int u, char *bufferP)
+{
+	bufferP[0] = (u >> 24) & 0xFF;
+	bufferP[1] = (u >> 16) & 0xFF;
+	bufferP[2] = (u >> 8) & 0xFF;
+	bufferP[3] = u & 0xFF;
+
+	return bufferP + 4;
+}
+
 char * Sender::addShortToBuffer(short s, char *bufferP)
 {
 	bufferP[0] = (s >> 8) & 0xFF;
@@ -98,6 +108,7 @@ int Sender::sendRegisterMessage(string serverID, short port, string name, int ar
  	char buffer[messageSize];
  	char *bufferP = buffer;
 
+ 	bufferP = addUnsignedIntToBuffer(messageSize, bufferP);
  	bufferP = addIntToBuffer(static_cast<int>(REGISTER), bufferP);
  	bufferP = addStringToBuffer(serverID, bufferP);
  	bufferP = addShortToBuffer(port, bufferP);
