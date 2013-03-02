@@ -41,16 +41,29 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
     Receiver receiver(clientSocketFd);
 
     if (chunkInfo[clientSocketFd] == 0) {
-        unsigned int numBytes = receiver.receiveMessageSize();
-        chunkInfo[clientSocketFd] = numBytes;
+        int numBytes = receiver.receiveMessageSize();
+        if(numBytes >= 0 )
+        {
+            unsigned int nb = (unsigned int)numBytes;
+            chunkInfo[clientSocketFd] = nb;
+        }
+
+        
     } else {
-        string recvStr = receiver.receiveMessageGivenSize(chunkInfo[clientSocketFd]);
-        chunkInfo[clientSocketFd] = 0;
+        unsigned int size = chunkInfo[clientSocketFd];
+        char buffer[size];
+        if(receiver.receiveMessageGivenSize(size, buffer) == 0)
+        {
+            chunkInfo[clientSocketFd] = 0;
+            string recvStr(buffer, buffer+size);
+            cout << recvStr << endl;
 
-        cout << recvStr << endl;
+            Sender s(clientSocketFd);
+            s.sendMessage(recvStr);
+            
+        }
 
-        Sender s(clientSocketFd);
-        s.sendMessage(recvStr);
+
     }
 }
 

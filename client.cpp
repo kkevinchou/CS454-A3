@@ -24,9 +24,11 @@ int main()
 
 	Sender s(socketFileDescriptor);
 	Receiver r(socketFileDescriptor);
-	s.sendMessage("Hi kevin");
-
-	string t = r.receiveMessage();
+	s.sendMessage("hi kevin, this is a test");
+s.sendMessage("byebye");
+	string t = r.receiveMessageAsString();
+	cout << "received: " << t << endl;
+	t = r.receiveMessageAsString();
 	cout << "received: " << t << endl;
 	close(socketFileDescriptor);
 }

@@ -11,69 +11,70 @@ Receiver::Receiver(int socketFileDescriptor)
 	_sfd = socketFileDescriptor;	
 }
 
-unsigned int Receiver::receiveMessageSize()
+// returns negative for error
+int Receiver::receiveMessageSize()
 {
-    int n;
-    unsigned char sizeBuffer[4];
-    unsigned int sizeSize = 4;
-    unsigned char * sizeBufferP = sizeBuffer;
+    char buffer[4];
 
-    while(true)
+    if(receiveMessageGivenSize(4, buffer) == 0)
     {
-        memset(sizeBuffer,0,4);
-        n = recv(_sfd,sizeBufferP,sizeSize, 0);
-        if(n==0)
-        {
-            return NULL; //connection closed!
-        }
-        else if (n < 0)
-        {
-             cerr << "ERROR reading from socket"<<endl;
-             return NULL;
-         }
-
-         sizeBufferP += n;
-         sizeSize -= n;
-
-         if(sizeSize == 0) break;
-        //receive 4 bytes first
+         return convertToUnsignedInt(buffer);
     }
-
-    unsigned int messageSize = (sizeBuffer[0] << 24) + (sizeBuffer[1] << 16) + (sizeBuffer[2] << 8) + sizeBuffer[3];
-    return messageSize;
+    else return -1;
 }
-string Receiver::receiveMessageGivenSize(unsigned int messageSize)
+
+// takes in a length 4 char *
+unsigned int Receiver::convertToUnsignedInt(char d[4])
 {
-    string msg = "";
+    return (d[0] << 24) + (d[1] << 16) + (d[2] << 8) + d[3];
+}
+
+// returns a message char * of length MessageSize (including null termination char if one exists)
+int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
+{
+   // string msg = "";
+    if(messageSize == 0) return 0;
+
     int n;
-    char buffer[messageSize];
+
+    char * bufferPointer = ret;
     while(true)
     {
       // receive the message
-        memset(buffer,0,messageSize);
-        n = recv(_sfd,buffer,messageSize, 0);
+        memset(bufferPointer,0,messageSize);
+        n = recv(_sfd,bufferPointer,messageSize, 0);
 
         if(n == 0)
         {
-            return NULL; //connection closed!
+            return -1; //connection closed!
         }
         else if (n < 0)
          {
              cerr << "ERROR reading from socket"<<endl;
-             return NULL;
+             return -2;
          }
-
-         string line(buffer);
-         msg += line;
+         bufferPointer += n;
 
          messageSize -= n;
          if(messageSize <= 0) break;
 
     }
-    return msg;
+    return 0;
 }
-string Receiver::receiveMessage()
+
+// deprecated
+string Receiver::receiveMessageAsString()
 {
     unsigned int messageSize = receiveMessageSize();
-    return receiveMessageGivenSize(messageSize);
+    char msg[messageSize];
+    if(receiveMessageGivenSize(messageSize, msg) == 0)
+    {
+        string ret(msg, msg+messageSize);
+        return ret;
+    }
+    else
+    {
+        return "";
+    }
+
 }

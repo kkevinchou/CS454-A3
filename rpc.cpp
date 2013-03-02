@@ -1,15 +1,22 @@
-#include "rpcserver.h"
+#include "rpc.h"
 #include "helpers.h"
-#include "constants.h"
 #include <stdlib.h> //getenv
 #include <string>
 #include <iostream>
-
+#include <stdio.h>
+#include <string.h>
+#include <map>
 using namespace std;
 
 int localSocketFd;
 int binderSocketFd;
 
+struct rpcFunctionKey
+{ 
+	char *name;
+	int *argTypes;
+	rpcFunctionKey(char *n, int *a) : name(n), argTypes(a){}
+};
 
 
 map<rpcFunctionKey, skeleton> registeredFunctions;
@@ -141,5 +148,10 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	if(registeredFunctions[k] != NULL) return 1;
 	registeredFunctions[k] = f;
 
+	return 0;
+}
+
+int rpcExecute()
+{
 	return 0;
 }
