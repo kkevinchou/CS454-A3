@@ -7,7 +7,7 @@
 #include <string.h>
 #include "constants.h"
 
-static bool debug = true;
+static bool debug = false;
 using namespace std;
 
 int Sender::sendArray(unsigned int length, char data[])
@@ -107,7 +107,7 @@ int Sender::sendRegisterMessage(string serverID, short port, string name, int ar
 	int argTypesSize = argTypesLength;
 
  	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesSize*4;
-cout << messageSize << " " << serverIdSize << " " << portSize << " "<< nameSize <<endl;
+//cout << messageSize << " " << serverIdSize << " " << portSize << " "<< nameSize <<endl;
 cout << serverID << " " << port << " " << name << endl;
  	char buffer[messageSize+8];
  	char *bufferP = buffer;

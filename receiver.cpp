@@ -7,7 +7,72 @@
 #include "constants.h"
 using namespace std;
 
-static bool debug = true;
+static bool debug = false;
+
+char * Receiver::extractUnsignedInt(char * head, unsigned int &i)
+{
+    char  buffer[4];
+    for(int i = 0; i < 4; i++)
+    {
+        buffer[i] = *head;
+        head;
+    }
+    i = convertToUnsignedInt(buffer);
+    return head++;
+}
+char * Receiver::extractInt(char * head, int &i)
+{
+    char buffer[4];
+    for(int i = 0; i < 4; i++)
+    {
+        buffer[i] = *head;
+        head++;
+    }
+    i = convertToInt(buffer);
+    return head;
+}
+char * Receiver::extractString(char * head, string &s)
+{
+    string r = "";
+    while(*head != '\0')
+    {
+        //cout << "extracting "<< *head<<endl;
+        r += *head;
+        head++;
+    }
+    s = r;
+    head++;
+    return head;
+}
+// make sure enough memory is allocated in argTypes
+char * Receiver::extractArgTypes(char * head, int argTypes[])
+{
+    int index = 0;
+    while(true)
+    {
+        int i;
+        head = extractInt(head, i);
+        argTypes[index] = i;
+        index++;
+        if(i ==0) break;
+
+    }
+    return head;
+}
+char * Receiver::extractShort(char * head, short &i)
+{
+    char buffer[2];
+    for(int i = 0; i < 2; i++)
+    {
+        buffer[i] = *head;
+        head++;
+    }
+    i = convertToShort(buffer);
+    return head;
+}
+
+
+
 
 Receiver::Receiver(int socketFileDescriptor)
 {
@@ -43,6 +108,10 @@ int Receiver::receiveMessageSize()
         return r;
     }
     else return -1;
+}
+short Receiver::convertToShort(char d[2])
+{
+    return (d[0] << 8) + d[1];
 }
 int Receiver::convertToInt(char d[4])
 {

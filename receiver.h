@@ -20,6 +20,11 @@ class Receiver
 		MessageType receiveMessageType();
 
 		int receiveRegisterMessage(string &serverID, int &port, string &name, int argTypes[]);
-
+		short convertToShort(char d[2]);
+		char * extractUnsignedInt(char * head, unsigned int &i);
+		char * extractInt(char * head, int &i);
+		char * extractString(char * head, string &s);
+		char * extractArgTypes(char * head, int argTypes[]); // make sure enough memory is allocated in argTypes
+		char * extractShort(char * head, short &i);
 };
 #endif

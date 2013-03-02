@@ -69,12 +69,39 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
         char buffer[size];
         if (receiver.receiveMessageGivenSize(size, buffer) == 0)
         {
+
             chunkInfo[clientSocketFd] = 0;
             // string recvStr(buffer, buffer+size);
             // cout << recvStr << endl;
 
             // Sender s(clientSocketFd);
             // s.sendMessage(recvStr);
+            string serverID;
+            short port;
+            string name;
+
+            char * bufferPointer = buffer;
+            bufferPointer = receiver.extractString(bufferPointer, serverID);
+            bufferPointer = receiver.extractShort(bufferPointer, port);
+            bufferPointer = receiver.extractString(bufferPointer, name);
+
+            unsigned int argTypesLength = (size - serverID.size() - 1 - 2 - name.size() - 1)/4;
+
+
+            int argTypes[argTypesLength];
+            receiver.extractArgTypes(bufferPointer, argTypes);
+
+
+            cout << "serverID: "<<serverID<<endl;
+            cout << "port: "<< port<<endl;
+            cout << "name: "<<name<<endl;
+            cout << "argTypes: ";
+            for(int i = 0; i < argTypesLength; i++)
+            {
+                cout << argTypes[i] << " ";
+            }
+            cout << endl;
+
         }
         else
         {
