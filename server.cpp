@@ -65,6 +65,8 @@ int main(int argc, char *argv[]) {
   /* call rpcExecute */
   rpcExecute();
 
+
+sleep (10);
   rpcTerminate();
 
   /* return */

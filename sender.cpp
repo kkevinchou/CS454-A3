@@ -7,6 +7,7 @@
 #include <string.h>
 #include "constants.h"
 
+static bool debug = true;
 using namespace std;
 
 int Sender::sendArray(unsigned int length, char data[])
@@ -14,13 +15,17 @@ int Sender::sendArray(unsigned int length, char data[])
 	char * bytesPtr = data;
 	unsigned int sentSize = length;
 	int n;
-	/* cout << "Sending size "<<length<<endl;
-	 cout << "Sending: ";
-	 for(int i = 0; i < length; i++)
-	 {
-	 	cout << data[i] << " ";
-	 }
-	 cout << endl;*/
+	if(debug)
+	{
+		cout << "Sending size "<<length<<endl;
+		 cout << "Sending: ";
+		 for(int i = 0; i < length; i++)
+		 {
+		 	cout << (int)data[i] << " ";
+		 }
+		 cout << endl;
+	}
+	
 	while(true)
 	{
 		// send the first 4 bytes
@@ -97,13 +102,14 @@ char * Sender::addIntBufferToBuffer(int intBuf[], int numInts, char *bufferP) {
 int Sender::sendRegisterMessage(string serverID, short port, string name, int argTypesLength, int argTypes[])
 {
 	int serverIdSize = serverID.size() + 1;
-	int portSize = 4;
+	int portSize = 2;
 	int nameSize = name.size() + 1;
 	int argTypesSize = argTypesLength;
 
  	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesSize;
-
- 	char buffer[messageSize];
+cout << messageSize << " " << serverIdSize << " " << portSize << " "<< nameSize <<endl;
+cout << serverID << " " << port << " " << name << endl;
+ 	char buffer[messageSize+8];
  	char *bufferP = buffer;
 
  	bufferP = addUnsignedIntToBuffer(messageSize, bufferP);

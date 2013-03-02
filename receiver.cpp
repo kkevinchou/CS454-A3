@@ -7,7 +7,7 @@
 #include "constants.h"
 using namespace std;
 
-bool debug = true;
+static bool debug = true;
 
 Receiver::Receiver(int socketFileDescriptor)
 {
@@ -68,8 +68,10 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
     {
         memset(bufferPointer,0,sizeLeft);
         n = recv(_sfd,bufferPointer,sizeLeft, 0);
+        cerr << "Receiving..."<<sizeLeft<<endl;
         if(n == 0)
         {
+            cerr << "Connection closed"<<endl;
             return -1; //connection closed!
         }
         else if (n < 0)
@@ -83,12 +85,15 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
 
     }
 
-    if (debug) cerr << "Received: ";
-    for(int i = 0; i < messageSize; i++)
+    if (debug) 
     {
-        if (debug) cerr << (int)ret[i] << " ";
+        cerr << "Received: ";
+        for(int i = 0; i < messageSize; i++)
+        {
+            cerr << (int)ret[i] << " ";
+        }
+        cout << endl;
     }
-    cout << endl;
     return 0;
 }
 
