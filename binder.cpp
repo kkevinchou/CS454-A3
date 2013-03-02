@@ -42,7 +42,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 
     if (chunkInfo[clientSocketFd] == 0) {
         int numBytes = receiver.receiveMessageSize();
-        
+
          //   cout << "nb" << nb << " " << numBytes<<endl;
         if(numBytes >= 0 )
         {
@@ -55,7 +55,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
             chunkInfo[clientSocketFd] = 0;
         }
 
-        
+
     } else {
         unsigned int size = chunkInfo[clientSocketFd];
         char buffer[size];
@@ -67,7 +67,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 
             Sender s(clientSocketFd);
             s.sendMessage(recvStr);
-            
+
         }
         else
         {
