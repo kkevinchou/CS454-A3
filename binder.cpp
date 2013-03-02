@@ -49,17 +49,13 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
         {
             unsigned int nb = (unsigned int)numBytes;
             chunkInfo[clientSocketFd] = nb;
+            if(receiver.receiveMessageType() == REGISTER) cout << "Received REGISTER message"<<endl;
         }
         else
         {
             //failed
             chunkInfo[clientSocketFd] = 0;
         }
-
-
-        if(receiver.receiveMessageType() == REGISTER) cout << "Received REGISTER message"<<endl;
-
-
     } else {
         unsigned int size = chunkInfo[clientSocketFd];
         char buffer[size];
@@ -71,7 +67,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 
             Sender s(clientSocketFd);
             s.sendMessage(recvStr);
-
         }
         else
         {

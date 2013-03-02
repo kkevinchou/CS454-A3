@@ -9,7 +9,7 @@ using namespace std;
 
 Receiver::Receiver(int socketFileDescriptor)
 {
-	_sfd = socketFileDescriptor;	
+	_sfd = socketFileDescriptor;
 }
 MessageType Receiver::receiveMessageType()
 {
@@ -21,7 +21,7 @@ MessageType Receiver::receiveMessageType()
         unsigned int r = convertToUnsignedInt(buffer);
         //cout << r << endl;
 
-         return getMessageTypeFromInt((int)r);
+        return getMessageTypeFromInt((int)r);
     }
     else return ERROR;
 }
@@ -88,7 +88,7 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
     cout << "Received: ";
     for(int i = 0; i < messageSize; i++)
     {
-        cout << ret[i] << " ";
+        cout << (int)ret[i] << " ";
     }
     cout << endl;
     return 0;
