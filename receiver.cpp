@@ -25,6 +25,9 @@ MessageType Receiver::receiveMessageType()
     }
     else return ERROR;
 }
+
+
+
 // returns negative for error
 int Receiver::receiveMessageSize()
 {

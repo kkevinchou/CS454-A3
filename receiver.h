@@ -16,5 +16,7 @@ class Receiver
 		unsigned int convertToUnsignedInt(char d[4]);
 		MessageType receiveMessageType();
 
+		int receiveRegisterMessage(string &serverID, int &port, string &name, int argTypes[])
+
 };
 #endif
