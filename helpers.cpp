@@ -11,8 +11,43 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "constants.h"
 using namespace std;
 
+MessageType getMessageTypeFromInt(int i)
+{
+    MessageType ret = ERROR;
+    switch(i)
+    {
+        case 1: 
+            ret = REGISTER;
+        break;
+        case 2: 
+            ret = LOC_REQUEST;
+        break;
+        case 3: 
+            ret = LOC_SUCCESS;
+        break;
+        case 4: 
+            ret = LOC_FAILURE;
+        break;
+        case 5: 
+            ret = EXECUTE;
+        break;
+        case 6: 
+            ret = EXECUTE_SUCCESS;
+        break;
+        case 7: 
+            ret = EXECUTE_FAILURE;
+        break;
+        case 8: 
+            ret = TERMINATE;
+        break;
+        default:
+        break;
+    }
+    return ret;
+}
 void error(string msg)
 {
     cerr << msg << endl;

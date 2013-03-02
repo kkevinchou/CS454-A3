@@ -1,0 +1,19 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+enum MessageType
+{
+	ERROR = 0,
+	REGISTER = 1,
+	LOC_REQUEST = 2,
+	LOC_SUCCESS = 3,
+	LOC_FAILURE = 4,
+	EXECUTE = 5,
+	EXECUTE_SUCCESS = 6,
+	EXECUTE_FAILURE = 7,
+	TERMINATE = 8
+
+};
+
+
+#endif
