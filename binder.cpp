@@ -81,11 +81,13 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
             closed = true;
         }
 
-        if (closed) {
-            chunkInfo[clientSocketFd] = 0;
-            FD_CLR(clientSocketFd, master_set);
-            close(clientSocketFd);
-        }
+      
+    }
+
+    if (closed) {
+        chunkInfo[clientSocketFd] = 0;
+        FD_CLR(clientSocketFd, master_set);
+        close(clientSocketFd);
     }
 }
 

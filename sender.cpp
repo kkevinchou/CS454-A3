@@ -119,7 +119,7 @@ cout << serverID << " " << port << " " << name << endl;
  	bufferP = addStringToBuffer(name, bufferP);
  	bufferP = addIntBufferToBuffer(argTypes, argTypesLength, bufferP);
 
- 	sendArray(messageSize, buffer);
+ 	sendArray(messageSize+8, buffer);
 
  	return 0;
 }
