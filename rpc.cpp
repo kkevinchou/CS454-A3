@@ -157,9 +157,11 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 
 	int argTypesLength = 0;
 
-	while (argTypes[argTypesLength++]) {
-	}
-	--argTypesLength;
+	while (argTypes[argTypesLength++]);
+
+	cerr << "hostname : " << hostname.size() << endl;
+	cerr << "funcName : " << funcName.size() << endl;
+	cerr << "argTypesLength : " << argTypesLength << endl;
 
 	s.sendRegisterMessage(hostname, port, funcName, argTypesLength, argTypes);
 
