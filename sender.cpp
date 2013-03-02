@@ -5,6 +5,8 @@
 #include "helpers.h"
 #include <stdio.h>
 #include <string.h>
+#include "constants.h"
+
 using namespace std;
  int Sender::sendArray(unsigned int length, char data[])
  {
