@@ -106,7 +106,7 @@ int Sender::sendRegisterMessage(string serverID, short port, string name, int ar
 	int nameSize = name.size() + 1;
 	int argTypesSize = argTypesLength;
 
- 	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesSize;
+ 	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesSize*4;
 cout << messageSize << " " << serverIdSize << " " << portSize << " "<< nameSize <<endl;
 cout << serverID << " " << port << " " << name << endl;
  	char buffer[messageSize+8];
