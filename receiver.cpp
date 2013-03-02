@@ -4,13 +4,27 @@
 #include <sys/socket.h>
 #include <cstring>
 #include "helpers.h"
+#include "constants.h"
 using namespace std;
 
 Receiver::Receiver(int socketFileDescriptor)
 {
 	_sfd = socketFileDescriptor;	
 }
+MessageType Receiver::receiveMessageType()
+{
+    char buffer[4];
 
+    if(receiveMessageGivenSize(4, buffer) == 0)
+    {
+        //cout << buffer[3]<<endl;
+        unsigned int r = convertToUnsignedInt(buffer);
+        //cout << r << endl;
+
+         return getMessageTypeFromInt((int)r);
+    }
+    else return ERROR;
+}
 // returns negative for error
 int Receiver::receiveMessageSize()
 {

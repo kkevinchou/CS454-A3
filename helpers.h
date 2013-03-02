@@ -2,6 +2,7 @@
 #define HELPERS_H
 
 #include <string>
+#include "constants.h"
 
 /*
 return values:
@@ -23,5 +24,6 @@ int createSocket();
 
 void listenOnSocket(int localSocketFd);
 int acceptConnection(int localSocketFd);
+MessageType getMessageTypeFromInt(int i);
 
 #endif
