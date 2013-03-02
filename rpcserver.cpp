@@ -19,7 +19,7 @@ struct rpcFunctionKey
 	rpcFunctionKey(char *n, int *a) : name(n), argTypes(a){}
 };
 
-map<rpcFunctionKey, skeleton> registeredFunctions;
+static map<rpcFunctionKey, skeleton> registeredFunctions;
 
 bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r)
 {
@@ -173,10 +173,4 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 int rpcExecute()
 {
 	return 0;
-}
-
-int rpcTerminate()
-{
-	close(binderSocketFd);
-	close(localSocketFd);
 }
