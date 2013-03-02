@@ -174,3 +174,9 @@ int rpcExecute()
 {
 	return 0;
 }
+
+int rpcTerminate()
+{
+	close(binderSocketFd);
+	close(localSocketFd);
+}
