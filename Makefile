@@ -5,10 +5,10 @@ MAKEFILE_NAME = ${firstword ${MAKEFILE_LIST}}	# makefile name
 OBJECTS1 = binder.o sender.o helpers.o receiver.o
 EXEC1 = binder				# 1st executable name
 
-OBJECTS2 = server.o rpc.o helpers.o server_function_skels.o server_functions.o sender.o
+OBJECTS2 = server.o rpcserver.o helpers.o server_function_skels.o server_functions.o sender.o
 EXEC2 = server				# 2st executable name
 
-OBJECTS3 = client.o helpers.o sender.o receiver.o
+OBJECTS3 = client.o helpers.o sender.o receiver.o rpcclient.o
 EXEC3 = client				# 3rd executable name
 
 OBJECTS = ${OBJECTS1} ${OBJECTS2} ${OBJECTS3}				# all object files
