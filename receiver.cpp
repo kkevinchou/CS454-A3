@@ -52,7 +52,7 @@ unsigned int Receiver::convertToUnsignedInt(char d[4])
 // returns a message char * of length MessageSize (including null termination char if one exists)
 int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
 {
-   // cout << "Receiving size "<<messageSize<<endl;
+    cout << "Receiving size "<<messageSize<<endl;
    // string msg = "";
     if(messageSize == 0) return 0;
 
@@ -85,12 +85,12 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
 
     }
 
-    /*cout << "Received: ";
+    cout << "Received: ";
     for(int i = 0; i < messageSize; i++)
     {
         cout << ret[i] << " ";
     }
-    cout << endl;*/
+    cout << endl;
     return 0;
 }
 
