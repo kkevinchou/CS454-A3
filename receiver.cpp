@@ -18,7 +18,7 @@ MessageType Receiver::receiveMessageType()
     if(receiveMessageGivenSize(4, buffer) == 0)
     {
         //cout << buffer[3]<<endl;
-        unsigned int r = convertToUnsignedInt(buffer);
+        unsigned int r = convertToInt(buffer);
         //cout << r << endl;
 
          return getMessageTypeFromInt((int)r);
@@ -42,7 +42,10 @@ int Receiver::receiveMessageSize()
     }
     else return -1;
 }
-
+int Receiver::convertToInt(char d[4])
+{
+    return (d[0] << 24) + (d[1] << 16) + (d[2] << 8) + d[3];
+}
 // takes in a length 4 char *
 unsigned int Receiver::convertToUnsignedInt(char d[4])
 {
@@ -88,7 +91,7 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
     cout << "Received: ";
     for(int i = 0; i < messageSize; i++)
     {
-        cout << ret[i] << " ";
+        cout << (int)ret[i] << " ";
     }
     cout << endl;
     return 0;

@@ -14,6 +14,7 @@ class Receiver
 		int receiveMessageGivenSize(unsigned int messageSize, char ret[]); // returns a message char * of length MessageSize
 		int receiveMessageSize(); // returns a positive int (4 bytes)
 		unsigned int convertToUnsignedInt(char d[4]);
+		int convertToInt(char d[4]);
 		MessageType receiveMessageType();
 
 		int receiveRegisterMessage(string &serverID, int &port, string &name, int argTypes[]);
