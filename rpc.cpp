@@ -148,6 +148,8 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	if(registeredFunctions[k] != NULL) return 1;
 	registeredFunctions[k] = f;
 
+	cout << "Successfully registered: "<< name << endl;
+
 	return 0;
 }
 

@@ -12,6 +12,7 @@ class Sender
 		Sender(int socketFileDescriptor);
 		int sendMessage(string s);
         int sendUnsignedInt(unsigned int i);
+        int sendArray(unsigned int length, char data[]);
 };
 
 
