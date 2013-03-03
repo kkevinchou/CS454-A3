@@ -133,20 +133,20 @@ char * Receiver::extractDouble(char * head, double &d)
 char * Receiver::extractUnsignedInt(char * head, unsigned int &i)
 {
     char  buffer[4];
-    for(int i = 0; i < 4; i++)
+    for(int index = 0; index < 4; index++)
     {
-        buffer[i] = *head;
-        head;
+        buffer[index] = *head;
+        head++;
     }
     i = convertToUnsignedInt(buffer);
-    return head++;
+    return head;
 }
 char * Receiver::extractInt(char * head, int &i)
 {
     char buffer[4];
-    for(int i = 0; i < 4; i++)
+    for(int index = 0; index < 4; index++)
     {
-        buffer[i] = *head;
+        buffer[index] = *head;
         head++;
     }
     i = convertToInt(buffer);
@@ -169,9 +169,9 @@ char * Receiver::extractString(char * head, string &s)
 char * Receiver::extractShort(char * head, short &i)
 {
     char buffer[2];
-    for(int i = 0; i < 2; i++)
+    for(int index = 0; index < 2; index++)
     {
-        buffer[i] = *head;
+        buffer[index] = *head;
         head++;
     }
     i = convertToShort(buffer);
@@ -289,10 +289,10 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
 
     }
 
-    if (debug) 
+    if (debug)
     {
         cerr << "Received: ";
-        for(int i = 0; i < messageSize; i++)
+        for(unsigned int i = 0; i < messageSize; i++)
         {
             cerr << (int)ret[i] << " ";
         }
