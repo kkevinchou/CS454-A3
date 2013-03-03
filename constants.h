@@ -27,7 +27,11 @@ enum MessageType
 	EXECUTE_SUCCESS = 6,
 	EXECUTE_FAILURE = 7,
 	TERMINATE = 8
+};
 
+enum ReasonCode
+{
+    FUNCTION_NOT_AVAILABLE = 0
 };
 
 struct server_info {

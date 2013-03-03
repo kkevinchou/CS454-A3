@@ -44,7 +44,7 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
     short port;
     string name;
     RWBuffer b;
-    
+
     char * bufferPointer = buffer;
     bufferPointer = b.extractString(bufferPointer, serverID);
     bufferPointer = b.extractShort(bufferPointer, port);
@@ -70,7 +70,7 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
     }
 }
 
-void handleLocRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
+void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize) {
     string name;
     RWBuffer b;
     char * bufferPointer = buffer;
@@ -86,6 +86,7 @@ void handleLocRequest(Receiver &receiver, char buffer[], unsigned int bufferSize
 
     if (servicesDictionary.find(key) != servicesDictionary.end()) {
         cerr << "LOC REQ FOUND!" << endl;
+        // sender.
     } else {
         cerr << "LOC REQ NOT FOUND!" << endl;
     }
@@ -93,6 +94,8 @@ void handleLocRequest(Receiver &receiver, char buffer[], unsigned int bufferSize
 
 void handleRequest(int clientSocketFd, fd_set *master_set) {
     Receiver receiver(clientSocketFd);
+    Sender sender(clientSocketFd);
+
     bool closed = false;
     unsigned int messageSize;
     if (chunkInfo[clientSocketFd] == 0) {
@@ -123,7 +126,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
                 }
                 case LOC_REQUEST:
                 {
-                    handleLocRequest(receiver, buffer, size);
+                    handleLocRequest(receiver, sender, buffer, size);
                     break;
                 }
             }

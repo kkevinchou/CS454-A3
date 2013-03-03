@@ -73,14 +73,13 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	Sender s(binderSocketFd);
 
 	int argTypesLength = 0;
-
 	while (argTypes[argTypesLength++]);
 
 	cerr << "hostname : " << hostname.size() << endl;
 	cerr << "funcName : " << funcName.size() << endl;
 	cerr << "argTypesLength : " << argTypesLength << endl;
 
-	s.sendRegisterMessage(hostname, port, funcName, argTypesLength, argTypes);
+	s.sendRegisterMessage(hostname, port, funcName, argTypes);
 
 	cout << "Successfully registered: "<< name << endl;
 
@@ -143,7 +142,7 @@ cout << "Name: "<<name<<endl;
 				{
 					char * c = new char();
 					bufferPointer = b.extractChar(bufferPointer, *c);
-					
+
 					args[i] = (void *)c;
 				}
 				else
@@ -166,7 +165,7 @@ cout << "Name: "<<name<<endl;
 				{
 					int * c = new int();
 					bufferPointer = b.extractInt(bufferPointer, *c);
-					
+
 					args[i] = (void *)c;
 				}
 				else
@@ -209,7 +208,7 @@ cout << "Name: "<<name<<endl;
         cout << *((int *)args[i])<< " ";
     }
     cout << endl;
-	
+
 }
 
 
@@ -229,7 +228,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
         if (type == EXECUTE) {
             cout << "Received execute message"<<endl;
 
-  
+
 	        char buffer[messageSize];
 	        if (receiver.receiveMessageGivenSize(messageSize, buffer) == 0)
 	        {

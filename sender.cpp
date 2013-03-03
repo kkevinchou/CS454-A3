@@ -49,56 +49,11 @@ int Sender::sendArray(unsigned int length, char data[])
 
 	return sentSize;
 }
-int Sender::sendRegisterMessage(string serverID, short port, string name, int argTypesLength, int argTypes[])
-{
-	int serverIdSize = serverID.size() + 1;
-	int portSize = 2;
-	int nameSize = name.size() + 1;
-	int argTypesSize = argTypesLength;
-	// TODO: calculate argTypesLength in here rather than accept as a parameter
 
- 	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesSize*4;
- 	char buffer[messageSize+8];
- 	char *bufferP = buffer;
-
- 	RWBuffer b;
-
- 	bufferP = b.insertUnsignedIntToBuffer(messageSize, bufferP);
- 	bufferP = b.insertIntToBuffer(static_cast<int>(REGISTER), bufferP);
- 	bufferP = b.insertStringToBuffer(serverID, bufferP);
- 	bufferP = b.insertShortToBuffer(port, bufferP);
- 	bufferP = b.insertStringToBuffer(name, bufferP);
- 	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
-
- 	sendArray(messageSize + 8, buffer);
-
- 	return 0;
-}
 
 int Sender::getSocketFD()
 {
 	return _sfd;
-}
-int Sender::sendLocRequestMessage(string name, int argTypes[]) {
-	int nameSize = name.size() + 1;
-	int argTypesLength = 0;
-
-	while (argTypes[argTypesLength++]);
-
-	unsigned int messageSize = nameSize + argTypesLength * 4;
-	char buffer[messageSize+8];
-	char *bufferP = buffer;
-
-	RWBuffer b;
-
-	bufferP = b.insertUnsignedIntToBuffer(messageSize, bufferP);
- 	bufferP = b.insertIntToBuffer(static_cast<int>(LOC_REQUEST), bufferP);
-	bufferP = b.insertStringToBuffer(name, bufferP);
- 	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
-
- 	sendArray(messageSize + 8, buffer);
-
- 	return 0;
 }
 
 int Sender::sendUnsignedInt(unsigned int i) {
@@ -119,7 +74,68 @@ int Sender::sendMessage(string s)
 	return sendArray(size, cstr);
 }
 
+int Sender::sendMessage(unsigned int messageSize, MessageType msgType, char message[]) {
+	char buffer[messageSize + 8];
+	char *bufferP = buffer;
+
+	RWBuffer b;
+	bufferP = b.insertUnsignedIntToBuffer(messageSize, bufferP);
+ 	bufferP = b.insertIntToBuffer(static_cast<int>(msgType), bufferP);
+
+ 	for (unsigned int i = 0; i < messageSize; i ++) {
+ 		// Two bytes for message size and message type
+ 		buffer[i + 8] = message[i];
+ 	}
+
+ 	sendArray(messageSize + 8, buffer);
+}
+
 Sender::Sender(int socketFileDescriptor)
 {
 	_sfd = socketFileDescriptor;
+}
+
+/*****************************************************
+=== PROTOCOL FUNCTIONS
+*****************************************************/
+
+int Sender::sendRegisterMessage(string serverID, short port, string name, int argTypes[])
+{
+	int serverIdSize = serverID.size() + 1;
+	int portSize = 2;
+	int nameSize = name.size() + 1;
+	int argTypesLength = 0;
+	while (argTypes[argTypesLength++]);
+
+ 	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesLength * 4;
+ 	char buffer[messageSize];
+ 	char *bufferP = buffer;
+
+ 	RWBuffer b;
+ 	bufferP = b.insertStringToBuffer(serverID, bufferP);
+ 	bufferP = b.insertShortToBuffer(port, bufferP);
+ 	bufferP = b.insertStringToBuffer(name, bufferP);
+ 	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
+
+ 	sendMessage(messageSize, REGISTER, buffer);
+
+ 	return 0;
+}
+
+int Sender::sendLocRequestMessage(string name, int argTypes[]) {
+	int nameSize = name.size() + 1;
+	int argTypesLength = 0;
+	while (argTypes[argTypesLength++]);
+
+	unsigned int messageSize = nameSize + argTypesLength * 4;
+	char buffer[messageSize];
+	char *bufferP = buffer;
+
+	RWBuffer b;
+	bufferP = b.insertStringToBuffer(name, bufferP);
+ 	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
+
+ 	sendMessage(messageSize, LOC_REQUEST, buffer);
+
+ 	return 0;
 }

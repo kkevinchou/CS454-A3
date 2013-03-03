@@ -142,12 +142,12 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
     s.sendArray(messageSize + 8, message);
 }
 int rpcCall(char* name, int* argTypes, void** args) {
-    cerr << "RPC CALL" << endl;
-        char * binderAddressString = getenv ("BINDER_ADDRESS");
-    char * binderPortString = getenv("BINDER_PORT");
-    binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
+    // cerr << "RPC CALL" << endl;
+    sendLocRequest(string(name), argTypes);
+    // char * binderAddressString = getenv ("BINDER_ADDRESS");
+    // char * binderPortString = getenv("BINDER_PORT");
+    // binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
-    cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
-    //return sendLocRequest(string(name), argTypes);
+    // cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
     return 0;
 }

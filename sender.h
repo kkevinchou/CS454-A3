@@ -13,14 +13,16 @@ class Sender
 	public:
 		Sender(int socketFileDescriptor);
 		int sendMessage(string s);
-                int sendUnsignedInt(unsigned int i);
-                int sendArray(unsigned int length, char data[]);
+        int sendMessage(unsigned int messageSize, MessageType msgType, char message[]);
+        int sendUnsignedInt(unsigned int i);
+        int sendArray(unsigned int length, char data[]);
+        int getSocketFD();
 
-               
-                int sendRegisterMessage(string serverID, short port, string name, int argTypesLength, int argTypes[]);
-                int sendLocRequestMessage(string name, int argTypes[]);
-
-                int getSocketFD();
+        // Protocol Functions
+        int sendRegisterMessage(string serverID, short port, string name, int argTypes[]);
+        int sendLocRequestMessage(string name, int argTypes[]);
+        int sendLocSuccessMessage(string serverID, short port);
+        int sendLocFailureMessage(ReasonCode reasonCode);
 };
 
 #endif
