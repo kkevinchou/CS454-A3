@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "rwbuffer.h"
 
 using namespace std;
 
@@ -106,7 +107,7 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 		cout << (int)message[i]<<" ";
 	}
 	cout << endl;
-	Receiver receiver(0);
+	RWBuffer b;
  // string recvStr(buffer, buffer+size);
 	// cout << recvStr << endl;
 
@@ -116,23 +117,23 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 
 
 	char * bufferPointer = message;
-	bufferPointer = receiver.extractString(bufferPointer, name);
+	bufferPointer = b.extractString(bufferPointer, name);
 cout << "Name: "<<name<<endl;
 	cout << "A " << bufferPointer <<endl;
 
-	unsigned int argTypesLength = receiver.returnArgTypesLength(bufferPointer);
+	unsigned int argTypesLength = b.returnArgTypesLength(bufferPointer);
 
 	cout << "A' " << bufferPointer <<endl;
 	int argTypes[argTypesLength];
-	bufferPointer = receiver.extractArgTypes(bufferPointer, argTypes);
+	bufferPointer = b.extractArgTypes(bufferPointer, argTypes);
 
 	void * args[argTypesLength];
 
 	for(int i = 0; i < argTypesLength; i++)
 	{
 		int argType = argTypes[i];
-		unsigned short int length = receiver.getArrayLengthFromArgumentType(argType);
-		int type = receiver.getTypeFromArgumentType(argType);
+		unsigned short int length = b.getArrayLengthFromArgumentType(argType);
+		int type = b.getTypeFromArgumentType(argType);
 
 		switch(type)
 		{
@@ -141,14 +142,14 @@ cout << "Name: "<<name<<endl;
 				if(length == 0)
 				{
 					char * c = new char();
-					bufferPointer = receiver.extractChar(bufferPointer, *c);
+					bufferPointer = b.extractChar(bufferPointer, *c);
 					
 					args[i] = (void *)c;
 				}
 				else
 				{
 					char * cs = new char[length];
-					bufferPointer = receiver.extractCharArray(bufferPointer, cs, length);
+					bufferPointer = b.extractCharArray(bufferPointer, cs, length);
 					args[i] = (void *)cs;
 				}
 
@@ -164,14 +165,14 @@ cout << "Name: "<<name<<endl;
 				if(length == 0)
 				{
 					int * c = new int();
-					bufferPointer = receiver.extractInt(bufferPointer, *c);
+					bufferPointer = b.extractInt(bufferPointer, *c);
 					
 					args[i] = (void *)c;
 				}
 				else
 				{
 					int * cs = new int[length];
-					bufferPointer = receiver.extractIntArray(bufferPointer, cs, length);
+					bufferPointer = b.extractIntArray(bufferPointer, cs, length);
 					args[i] = (void *)cs;
 				}
 

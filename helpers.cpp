@@ -20,22 +20,22 @@ unsigned int sizeOfType(int type)
     switch(type)
     {
         case ARG_CHAR:
-            return 1;
+            return sizeof(char);
         break;
         case ARG_SHORT:
-            return 2;
+            return sizeof(short);
         break;
         case ARG_INT:
-             return 4;
+             return sizeof(int);
         break;
         case ARG_LONG:
-            return 4;
+            return sizeof(long);
         break;
         case ARG_DOUBLE:
-            return 8;
+            return sizeof(double);
         break;
         case ARG_FLOAT:
-            return 4;
+            return sizeof(float);
         break;
         default:
             return 0;

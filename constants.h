@@ -13,7 +13,7 @@ union DataTypeConversion
     float f;
     long l;
     short s;
-    char  cs[8];
+    char charArray[8];
 };
 
 enum MessageType

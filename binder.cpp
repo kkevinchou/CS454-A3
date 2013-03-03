@@ -18,6 +18,7 @@
 #include "helpers.h"
 #include "constants.h"
 #include "rpcserver.h" // for the typedef
+#include "rwbuffer.h"
 
 using namespace std;
 
@@ -42,11 +43,12 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
     string serverID;
     short port;
     string name;
-
+    RWBuffer b;
+    
     char * bufferPointer = buffer;
-    bufferPointer = receiver.extractString(bufferPointer, serverID);
-    bufferPointer = receiver.extractShort(bufferPointer, port);
-    bufferPointer = receiver.extractString(bufferPointer, name);
+    bufferPointer = b.extractString(bufferPointer, serverID);
+    bufferPointer = b.extractShort(bufferPointer, port);
+    bufferPointer = b.extractString(bufferPointer, name);
 
     unsigned int serverIDSize = serverID.size() + 1;
     unsigned int portSize = 2;
@@ -54,7 +56,7 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
 
     unsigned int argTypesLength = (bufferSize - serverIDSize - portSize - nameSize) / 4;
     int *argTypes = (int *)malloc(argTypesLength * sizeof(int));
-    receiver.extractArgTypes(bufferPointer, argTypes);
+    b.extractArgTypes(bufferPointer, argTypes);
 
     rpcFunctionKey key(name, argTypes);
     server_info location(serverID, port);
@@ -70,15 +72,15 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
 
 void handleLocRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
     string name;
-
+    RWBuffer b;
     char * bufferPointer = buffer;
-    bufferPointer = receiver.extractString(bufferPointer, name);
+    bufferPointer = b.extractString(bufferPointer, name);
 
     unsigned int nameSize = name.size() + 1;
 
     unsigned int argTypesLength = (bufferSize - nameSize) / 4;
     int argTypes[argTypesLength];
-    receiver.extractArgTypes(bufferPointer, argTypes);
+    b.extractArgTypes(bufferPointer, argTypes);
 
     rpcFunctionKey key(name, argTypes);
 

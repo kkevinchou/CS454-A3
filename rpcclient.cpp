@@ -9,6 +9,7 @@
 #include "sender.h"
 #include "constants.h"
 #include "receiver.h"
+#include "rwbuffer.h"
 using namespace std;
 
 static int localSocketFd;
@@ -36,7 +37,7 @@ int sendLocRequest(string name, int argTypes[]) {
 
 int sendExecuteRequest(char* name, int* argTypes, void**args)
 {
-    Receiver r(binderSocketFd);
+    RWBuffer b;
     Sender s(binderSocketFd);
     unsigned int argTypesLength = 0;
     unsigned int messageSize = 0;
@@ -47,10 +48,10 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
     {
         int argType = *argTypesP;
 
-        unsigned short length = r.getArrayLengthFromArgumentType(argType);
+        unsigned short length = b.getArrayLengthFromArgumentType(argType);
         if(length == 0) length = 1; // if it's a scalar, it still takes up one room
 
-        int type = r.getTypeFromArgumentType(argType);
+        int type = b.getTypeFromArgumentType(argType);
         unsigned int size = sizeOfType(type);
         messageSize += length*size;
 //cout << "type "<<type << " size "<< size << endl;
@@ -77,18 +78,18 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
     char message[messageSize + 8];
 
     char * messagePointer = message;
-    messagePointer = s.addUnsignedIntToBuffer(messageSize, messagePointer);
-    messagePointer = s.addIntToBuffer(static_cast<int>(EXECUTE), messagePointer);
-    messagePointer = s.addCStringToBuffer(name, messagePointer);
+    messagePointer = b.insertUnsignedIntToBuffer(messageSize, messagePointer);
+    messagePointer = b.insertIntToBuffer(static_cast<int>(EXECUTE), messagePointer);
+    messagePointer = b.insertCStringToBuffer(name, messagePointer);
 
-    messagePointer = s.addIntBufferToBuffer(argTypes, argTypesLength, messagePointer);
+    messagePointer = b.insertIntArrayToBuffer(argTypes, argTypesLength, messagePointer);
     for(int i = 0; i < argTypesLength-1; i++)
     {
          int argType = argTypes[i];
 
-        unsigned short length = r.getArrayLengthFromArgumentType(argType);
+        unsigned short length = b.getArrayLengthFromArgumentType(argType);
         if(length == 0) length= 1;
-        int type = r.getTypeFromArgumentType(argType);/*
+        int type = b.getTypeFromArgumentType(argType);/*
         char *addShortToBuffer(short s, char *bufferP);
         char *addIntToBuffer(int i, char *bufferP);
         char *addStringToBuffer(string s, char *bufferP);
@@ -112,7 +113,7 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
                 for(int j = 0; j < length; j++)
                 {
                     cout << "HERE "<<ints[j]<<endl;
-                    messagePointer = s.addIntToBuffer(ints[j], messagePointer);
+                    messagePointer = b.insertIntToBuffer(ints[j], messagePointer);
                 }
             }
             break;
