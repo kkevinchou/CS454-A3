@@ -42,15 +42,13 @@ extern bool debug;
 void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
     Receiver receiver(clientSocketFd);
     bool closed = false;
-
+    unsigned int messageSize;
     if (chunkInfo[clientSocketFd] == 0) {
-        int numBytes = receiver.receiveMessageSize();
 
          //   cout << "nb" << nb << " " << numBytes<<endl;
-        if(numBytes >= 0 )
+        if(receiver.receiveMessageSize(messageSize) == 0 )
         {
-            unsigned int nb = (unsigned int)numBytes;
-            chunkInfo[clientSocketFd] = nb;
+            chunkInfo[clientSocketFd] = messageSize;
 
 
             // TODO : HANDLE OTHER MESSAGE TYPES

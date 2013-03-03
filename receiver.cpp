@@ -9,6 +9,127 @@ using namespace std;
 
 static bool debug = false;
 
+// Extract Arrays
+unsigned short Receiver::getArrayLengthFromArgumentType(int argType)
+{
+    return argType & 65534;
+}
+int Receiver::getTypeFromArgumentType(int argType)
+{
+    return (argType >> 16) & 255;
+}
+
+char * Receiver::extractIntArray(char * head, int intArray[], unsigned int length) // make sure enough memory is in intArray
+{
+    for(int i = 0; i < length, i++)
+    {
+        int n;
+        head = extractInt(head, n);
+        intArray[i] = n;
+    }
+    return head;
+}
+char * Receiver::extractShortArray(char * head, short shortArray[], unsigned int length)
+{
+    for(int i = 0; i < length, i++)
+    {
+        short n;
+        head = extractShort(head, n);
+        shortArray[i] = n;
+    }
+    return head;
+}
+char * Receiver::extractCharArray(char * head, char charArray[], unsigned int length)
+{
+    for(int i = 0; i < length, i++)
+    {
+        char n;
+        head = extractChar(head, n);
+        charArray[i] = n;
+    }
+    return head;
+}
+char * Receiver::extractLongArray(char * head, long longArray[], unsigned int length)
+{
+    for(int i = 0; i < length, i++)
+    {
+        long n;
+        head = extractLong(head, n);
+        intArray[i] = n;
+    }
+    return head;
+}
+char * Receiver::extractDoubleArray(char * head, double doubleArray[], unsigned int length)
+{
+    for(int i = 0; i < length, i++)
+    {
+        double n;
+        head = extractDouble(head, n);
+        doubleArray[i] = n;
+    }
+    return head;
+}
+char * Receiver::extractFloatrray(char * head, float floatArray[], unsigned int length)
+{
+    for(int i = 0; i < length, i++)
+    {
+        float n;
+        head = extractFloat(head, n);
+        floatArray[i] = n;
+    }
+    return head;
+}
+// make sure enough memory is allocated in argTypes
+char * Receiver::extractArgTypes(char * head, int argTypes[])
+{
+    int index = 0;
+    while(true)
+    {
+        int i;
+        head = extractInt(head, i);
+        argTypes[index] = i;
+        index++;
+        if(i ==0) break;
+
+    }
+    return head;
+}
+
+// Extract Types
+char * Receiver::extractLong(char * head, long &l)
+{
+    char buffer[4];
+    for(int i = 0; i < 4; i++)
+    {
+        buffer[i] = *head;
+        head++;
+    }
+    i = convertToLong(buffer);
+    return head;
+}
+char * Receiver::extractFloat(char * head, float &f)
+{
+    char buffer[4];
+    for(int i = 0; i < 4; i++)
+    {
+        buffer[i] = *head;
+        head++;
+    }
+    i = convertToFloat(buffer);
+    return head;
+}
+char * Receiver::extractDouble(char * head, double &d)
+{
+    char buffer[8];
+    for(int i = 0; i < 8; i++)
+    {
+        buffer[i] = *head;
+        head++;
+    }
+    i = convertToDouble(buffer);
+    return head;
+}
+
 char * Receiver::extractUnsignedInt(char * head, unsigned int &i)
 {
     char  buffer[4];
@@ -44,21 +165,7 @@ char * Receiver::extractString(char * head, string &s)
     head++;
     return head;
 }
-// make sure enough memory is allocated in argTypes
-char * Receiver::extractArgTypes(char * head, int argTypes[])
-{
-    int index = 0;
-    while(true)
-    {
-        int i;
-        head = extractInt(head, i);
-        argTypes[index] = i;
-        index++;
-        if(i ==0) break;
 
-    }
-    return head;
-}
 char * Receiver::extractShort(char * head, short &i)
 {
     char buffer[2];
@@ -71,7 +178,7 @@ char * Receiver::extractShort(char * head, short &i)
     return head;
 }
 
-
+//Constructor
 
 
 Receiver::Receiver(int socketFileDescriptor)
@@ -93,22 +200,35 @@ MessageType Receiver::receiveMessageType()
     else return ERROR;
 }
 
+unsigned int Receiver::returnArgTypesLength(int * head)
+{
+    // keeps incrementing pointer until we find a 0
+    unsigned int counter = 0;
+    while(*head != 0)
+    {
+        counter++;
+        head++;
+    }
 
+    return counter;
+}
 
 // returns negative for error
-int Receiver::receiveMessageSize()
+int Receiver::receiveMessageSize(unsigned int &i)
 {
     char buffer[4];
 
     if(receiveMessageGivenSize(4, buffer) == 0)
     {
         //cout << buffer[3]<<endl;
-        unsigned int r = convertToUnsignedInt(buffer);
+        i = convertToUnsignedInt(buffer);
         //cout << r << endl;
-        return r;
+        return 0;
     }
     else return -1;
 }
+
+// Convert
 short Receiver::convertToShort(char d[2])
 {
     return (d[0] << 8) + d[1];
@@ -122,6 +242,21 @@ unsigned int Receiver::convertToUnsignedInt(char d[4])
 {
     return (d[0] << 24) + (d[1] << 16) + (d[2] << 8) + d[3];
 }
+
+
+long Receiver::convertToLong(char d[4])
+{
+return (d[0] << 24) + (d[1] << 16) + (d[2] << 8) + d[3];
+}
+float Receiver::convertToFloat(char d[4])
+{
+return (d[0] << 24) + (d[1] << 16) + (d[2] << 8) + d[3];
+}
+double Receiver::convertToDouble(char d[8])
+{
+    return *reinterpret_cast<double*>(d);
+}
+
 
 // returns a message char * of length MessageSize (including null termination char if one exists)
 int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
@@ -169,21 +304,28 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
 // deprecated
 string Receiver::receiveMessageAsString()
 {
-    unsigned int messageSize = receiveMessageSize();
-    char msg[messageSize];
-   // cout << "A"<<endl;
-    if(receiveMessageGivenSize(messageSize, msg) == 0)
+    unsigned int messageSize;
+    if(receiveMessageSize(messageSize) == 0)
     {
-       // cout << "B"<<endl;
-        // if we're expecting a string, messageSize should include the null char
-        // but when we're creating a string from it, don't consider the last null char
-        string ret(msg, msg+messageSize-1);
-       // cout << "C"<<endl;
-        return ret;
+          char msg[messageSize];
+       // cout << "A"<<endl;
+        if(receiveMessageGivenSize(messageSize, msg) == 0)
+        {
+           // cout << "B"<<endl;
+            // if we're expecting a string, messageSize should include the null char
+            // but when we're creating a string from it, don't consider the last null char
+            string ret(msg, msg+messageSize-1);
+           // cout << "C"<<endl;
+            return ret;
+        }
     }
-    else
-    {
-        return "";
-    }
+  
+
+    return "";
+    
 
 }
+
+
+
+
