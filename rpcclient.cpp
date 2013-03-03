@@ -74,6 +74,13 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
     }
     messageSize++; //accountfor null termination char
 
+    bool debug = true;
+
+    if(debug)
+    {
+        cout << endl;
+        cout << "Name: " << name<<endl;
+    }
     // create buffer for full message
     char message[messageSize + 8];
 
@@ -97,48 +104,101 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
         char *addUnsignedIntToBuffer(unsigned int u, char *bufferP);*/
 
         void * arg = args[i];
-        cout << "type "<<type<<endl;
+
         switch(type)
         {
             case ARG_CHAR:
-            //messagePointer = addCharToBuffer()
+            {
+                char * chars = (char *)arg;
+                if(debug) cout << " "<< i<<": Char ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << chars[j]<< " ";
+                    messagePointer = b.insertCharToBuffer(chars[j], messagePointer);
+                }
+
+                if(debug) cout << endl;
+            }
 
             break;
             case ARG_SHORT:
-
+            {
+                short * shorts = (short *)arg;
+                if(debug) cout << " "<< i<<": Short ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << shorts[j] << " ";
+                    messagePointer = b.insertShortToBuffer(shorts[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
+            break;
             break;
             case ARG_INT:
             {
                 int * ints = (int *)arg;
+                if(debug) cout << " "<< i<<": Int ";
                 for(int j = 0; j < length; j++)
                 {
-                    cout << "HERE "<<ints[j]<<endl;
+                    if(debug) cout << ints[j] << " ";
                     messagePointer = b.insertIntToBuffer(ints[j], messagePointer);
                 }
+                if(debug) cout << endl;
             }
             break;
             case ARG_LONG:
-
+            {
+                long * longs = (long *)arg;
+                if(debug) cout << " "<< i<<": Long ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << longs[j] << " ";
+                    messagePointer = b.insertLongToBuffer(longs[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
             break;
             case ARG_DOUBLE:
-
+            {
+                double * doubles = (double *)arg;
+                if(debug) cout << " "<< i<<": Double ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << doubles[j] << " ";
+                    messagePointer = b.insertDoubleToBuffer(doubles[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
             break;
             case ARG_FLOAT:
-
+            {
+                float * floats = (float *)arg;
+                if(debug) cout << " "<< i<<": Float ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << floats[j] << " ";
+                    messagePointer = b.insertFloatToBuffer(floats[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
+            break;
             break;
             default:
-
+                cerr << "WARNING: argument of unknown type."<<endl;
             break;
         }
     }
-
-    cout << "Message "<<messageSize<<": "<<endl;
-    for(int i = 0; i < messageSize+8; i++)
+    if(debug)
     {
-        cout << (int)message[i] << " ";
+        cout << "Sending an EXECUTE message of size "<<messageSize << ": "<<endl;
+        for(int i = 0; i < messageSize+8; i++)
+        {
+            cout << (int)message[i] << " ";
 
+        }
+        cout << endl;
     }
-    cout << endl;
+
     s.sendArray(messageSize + 8, message);
 }
 int rpcCall(char* name, int* argTypes, void** args) {
@@ -147,7 +207,7 @@ int rpcCall(char* name, int* argTypes, void** args) {
     char * binderPortString = getenv("BINDER_PORT");
     binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
-    cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
+    sendExecuteRequest(name, argTypes, args);
     //return sendLocRequest(string(name), argTypes);
     return 0;
 }

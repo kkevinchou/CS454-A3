@@ -42,7 +42,7 @@ class RWBuffer
 		char * extractCharArray(char * bufferP, char charArray[], unsigned int length); 
 		char * extractLongArray(char * bufferP, long longArray[], unsigned int length); 
 		char * extractDoubleArray(char * bufferP, double doubleArray[], unsigned int length); 
-		char * extractFloatrray(char * bufferP, float floatArray[], unsigned int length); 
+		char * extractFloatArray(char * bufferP, float floatArray[], unsigned int length); 
 		// extract different data types
 		char * extractUnsignedInt(char * bufferP, unsigned int &i);
 		char * extractInt(char * bufferP, int &i);

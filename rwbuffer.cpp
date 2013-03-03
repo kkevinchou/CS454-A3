@@ -92,7 +92,7 @@ char * RWBuffer::extractDoubleArray(char * bufferP, double doubleArray[], unsign
     }
     return bufferP;
 }
-char * RWBuffer::extractFloatrray(char * bufferP, float floatArray[], unsigned int length)
+char * RWBuffer::extractFloatArray(char * bufferP, float floatArray[], unsigned int length)
 {
     for(int i = 0; i < length; i++)
     {
