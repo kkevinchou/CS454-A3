@@ -19,6 +19,10 @@ class Sender
         char *addStringToBuffer(string s, char *bufferP);
         char *addIntBufferToBuffer(int intBuf[], int numInts, char *bufferP);
         char *addUnsignedIntToBuffer(unsigned int u, char *bufferP);
+        char *addCharToBuffer(char c, char *bufferP);
+        // char *addDoubleToBuffer(double d, char *bufferP);
+        // char *addFloatToBuffer(float f, char *bufferP);
+        char *addLongToBuffer(long l, char *bufferP);
 
         int sendRegisterMessage(string serverID, short port, string name, int argTypesLength, int argTypes[]);
         int sendLocRequestMessage(string name, int argTypes[]);

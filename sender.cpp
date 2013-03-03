@@ -50,7 +50,6 @@ int Sender::sendArray(unsigned int length, char data[])
 	return sentSize;
 }
 
-
 char * Sender::addStringToBuffer(string s, char *bufferP)
 {
 	unsigned int i = 0;
@@ -97,6 +96,35 @@ char * Sender::addIntBufferToBuffer(int intBuf[], int numInts, char *bufferP) {
 	}
 
 	return ptr;
+}
+
+char *addCharToBuffer(char c, char *bufferP) {
+	bufferP[0] = c;
+	return bufferP + 1;
+}
+
+// char *addDoubleToBuffer(double d, char *bufferP) {
+// 	int size = sizeof(d);
+// 	for (int i = 1; i <= size; i++) {
+// 		bufferP[i - 1] = (d >> ((size - i) * 8)) & 0xFF;
+// 	}
+// 	return bufferP + size;
+// }
+
+// char *addFloatToBuffer(float f, char *bufferP) {
+// 	int size = sizeof(f);
+// 	for (int i = 1; i <= size; i++) {
+// 		bufferP[i - 1] = (f >> ((size - i) * 8)) & 0xFF;
+// 	}
+// 	return bufferP + size;
+// }
+
+char *addLongToBuffer(long l, char *bufferP) {
+	int size = sizeof(l);
+	for (int i = 1; i <= size; i++) {
+		bufferP[i - 1] = (l >> ((size - i) * 8)) & 0xFF;
+	}
+	return bufferP + size;
 }
 
 int Sender::sendRegisterMessage(string serverID, short port, string name, int argTypesLength, int argTypes[])

@@ -12,8 +12,37 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "constants.h"
+#include "rpc.h"
 using namespace std;
 
+unsigned int sizeOfType(int type)
+{
+    switch(type)
+    {
+        case ARG_CHAR:
+            return 1;
+        break;
+        case ARG_SHORT:
+            return 2;
+        break;
+        case ARG_INT:
+             return 4;
+        break;
+        case ARG_LONG:
+            return 4;
+        break;
+        case ARG_DOUBLE:
+            return 8;
+        break;
+        case ARG_FLOAT:
+            return 4;
+        break;
+        default:
+            return 0;
+        break;
+    }
+    return 0;
+}
 MessageType getMessageTypeFromInt(int i)
 {
     MessageType ret = ERROR;

@@ -3,7 +3,6 @@
 
 #include <string>
 #include "constants.h"
-
 /*
 return values:
 0 - success
@@ -21,6 +20,8 @@ int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPort
 int createSocket();
 
 // Server Helpers
+
+unsigned int sizeOfType(int type);
 
 void listenOnSocket(int localSocketFd);
 int acceptConnection(int localSocketFd);
