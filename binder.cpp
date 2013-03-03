@@ -92,13 +92,13 @@ void handleLocRequest(Receiver &receiver, char buffer[], unsigned int bufferSize
 void handleRequest(int clientSocketFd, fd_set *master_set) {
     Receiver receiver(clientSocketFd);
     bool closed = false;
-
+    unsigned int messageSize;
     if (chunkInfo[clientSocketFd] == 0) {
-        int numBytes = receiver.receiveMessageSize();
-        if(numBytes >= 0 )
+
+         //   cout << "nb" << nb << " " << numBytes<<endl;
+        if(receiver.receiveMessageSize(messageSize) == 0 )
         {
-            unsigned int nb = (unsigned int)numBytes;
-            chunkInfo[clientSocketFd] = nb;
+            chunkInfo[clientSocketFd] = messageSize;
 
             MessageType msgType = receiver.receiveMessageType();
             msgInfo[clientSocketFd] = msgType;
