@@ -8,6 +8,11 @@
 #include <map>
 #include "sender.h"
 #include "constants.h"
+#include "receiver.h"
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 using namespace std;
 
@@ -94,6 +99,7 @@ void printSettings(int localSocketFd) {
 
 void handleExecuteMessage(char * message, unsigned int messageSize)
 {
+	Receiver receiver(0);
  // string recvStr(buffer, buffer+size);
 	// cout << recvStr << endl;
 
@@ -102,7 +108,7 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 	string name;
 
 
-	char * bufferPointer = buffer;
+	char * bufferPointer = message;
 	bufferPointer = receiver.extractString(bufferPointer, name);
 
 	cout << "A " << bufferPointer <<endl;
@@ -118,8 +124,8 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 	for(int i = 0; i < argTypesLength; i++)
 	{
 		int argType = argTypes[i];
-		unsigned short int length = getArrayLengthFromArgumentType(argType);
-		int type = getTypeFromArgumentType(argType);
+		unsigned short int length = receiver.getArrayLengthFromArgumentType(argType);
+		int type = receiver.getTypeFromArgumentType(argType);
 
 		switch(type)
 		{
@@ -199,11 +205,10 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 
 void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
 	Receiver receiver(clientSocketFd);
-    bool sucess = false;
+    bool success = false;
 
 // if (chunkInfo[clientSocketFd] == 0) {
 	unsigned int messageSize;
-    int messageSize = receiver.receiveMessageSize();
 
      //   cout << "nb" << nb << " " << numBytes<<endl;
     if(receiver.receiveMessageSize(messageSize) == 0 )
@@ -223,7 +228,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 	           	handleExecuteMessage(buffer, messageSize);
 
 
-	            sucess = true;
+	            success = true;
 	        }
 	    }
 

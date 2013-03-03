@@ -48,8 +48,8 @@ class Receiver
 		char * extractLong(char * head, long &l);
 		char * extractFloat(char * head, float &f);
 		char * extractDouble(char * head, double &d);
-
-		unsigned int returnArgTypesLength(int * head);
+		char * extractChar(char * head, char &c);
+		unsigned int returnArgTypesLength(char * head);
 
 		unsigned short getArrayLengthFromArgumentType(int argType);
 		int getTypeFromArgumentType(int argType);

@@ -21,7 +21,7 @@ int Receiver::getTypeFromArgumentType(int argType)
 
 char * Receiver::extractIntArray(char * head, int intArray[], unsigned int length) // make sure enough memory is in intArray
 {
-    for(int i = 0; i < length, i++)
+    for(int i = 0; i < length; i++)
     {
         int n;
         head = extractInt(head, n);
@@ -31,7 +31,7 @@ char * Receiver::extractIntArray(char * head, int intArray[], unsigned int lengt
 }
 char * Receiver::extractShortArray(char * head, short shortArray[], unsigned int length)
 {
-    for(int i = 0; i < length, i++)
+    for(int i = 0; i < length; i++)
     {
         short n;
         head = extractShort(head, n);
@@ -41,7 +41,7 @@ char * Receiver::extractShortArray(char * head, short shortArray[], unsigned int
 }
 char * Receiver::extractCharArray(char * head, char charArray[], unsigned int length)
 {
-    for(int i = 0; i < length, i++)
+    for(int i = 0; i < length; i++)
     {
         char n;
         head = extractChar(head, n);
@@ -51,17 +51,17 @@ char * Receiver::extractCharArray(char * head, char charArray[], unsigned int le
 }
 char * Receiver::extractLongArray(char * head, long longArray[], unsigned int length)
 {
-    for(int i = 0; i < length, i++)
+    for(int i = 0; i < length; i++)
     {
         long n;
         head = extractLong(head, n);
-        intArray[i] = n;
+        longArray[i] = n;
     }
     return head;
 }
 char * Receiver::extractDoubleArray(char * head, double doubleArray[], unsigned int length)
 {
-    for(int i = 0; i < length, i++)
+    for(int i = 0; i < length; i++)
     {
         double n;
         head = extractDouble(head, n);
@@ -71,7 +71,7 @@ char * Receiver::extractDoubleArray(char * head, double doubleArray[], unsigned 
 }
 char * Receiver::extractFloatrray(char * head, float floatArray[], unsigned int length)
 {
-    for(int i = 0; i < length, i++)
+    for(int i = 0; i < length; i++)
     {
         float n;
         head = extractFloat(head, n);
@@ -104,7 +104,7 @@ char * Receiver::extractLong(char * head, long &l)
         buffer[i] = *head;
         head++;
     }
-    i = convertToLong(buffer);
+    l = convertToLong(buffer);
     return head;
 }
 char * Receiver::extractFloat(char * head, float &f)
@@ -115,7 +115,13 @@ char * Receiver::extractFloat(char * head, float &f)
         buffer[i] = *head;
         head++;
     }
-    i = convertToFloat(buffer);
+    f = convertToFloat(buffer);
+    return head;
+}
+char * Receiver::extractChar(char * head, char &c)
+{
+    c = *head;
+    head++;
     return head;
 }
 char * Receiver::extractDouble(char * head, double &d)
@@ -126,7 +132,7 @@ char * Receiver::extractDouble(char * head, double &d)
         buffer[i] = *head;
         head++;
     }
-    i = convertToDouble(buffer);
+    d = convertToDouble(buffer);
     return head;
 }
 
@@ -200,14 +206,18 @@ MessageType Receiver::receiveMessageType()
     else return ERROR;
 }
 
-unsigned int Receiver::returnArgTypesLength(int * head)
+unsigned int Receiver::returnArgTypesLength(char * head)
 {
     // keeps incrementing pointer until we find a 0
     unsigned int counter = 0;
-    while(*head != 0)
+    while(true)
     {
         counter++;
-        head++;
+
+        int type;
+        head = extractInt(head, type);
+        if(head == 0) break;
+        
     }
 
     return counter;
