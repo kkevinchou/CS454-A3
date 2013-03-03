@@ -36,9 +36,12 @@ int sendLocRequest(string name, int argTypes[]) {
 
 int sendExecuteRequest(char* name, int* argTypes, void**args)
 {
-    Receiver r(0);
-    unsigned int argTypesLength = 1;
+    Receiver r(binderSocketFd);
+    Sender s(binderSocketFd);
+    unsigned int argTypesLength = 0;
     unsigned int messageSize = 0;
+
+    // calculate length of arguments
     int * argTypesP = argTypes;
     while(*argTypesP != 0)
     {
@@ -47,43 +50,71 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
         unsigned short length = r.getArrayLengthFromArgumentType(argType);
         if(length == 0) length = 1; // if it's a scalar, it still takes up one room
 
-        int type = getTypeFromArgumentType(argType);
-        unsignedint sizeOfType = sizeOfType(type);
-        messageSize += length*sizeOfType;
-{
+        int type = r.getTypeFromArgumentType(argType);
+        unsigned int size = sizeOfType(type);
+        messageSize += length*size;
+//cout << "type "<<type << " size "<< size << endl;
         argTypesP++;
         argTypesLength++;
     }
+    argTypesLength++; //accout for the 0
 
+    // calculate length of argTypes
     messageSize += 4*argTypesLength;
 
+
+
+    // calculate name size
+    char * nameP = name;
+    while(*nameP != '\0')
+    {
+        messageSize++;
+        nameP++;
+    }
+    messageSize++; //accountfor null termination char
+
+    // create buffer for full message
     char message[messageSize + 8];
 
     char * messagePointer = message;
-    messagePointer = addUnsignedIntToBuffer(messageSize, messagePointer);
-    messagePointer = addIntToBuffer(static_cast<int>(EXECUTE), messagePointer);
+    messagePointer = s.addUnsignedIntToBuffer(messageSize, messagePointer);
+    messagePointer = s.addIntToBuffer(static_cast<int>(EXECUTE), messagePointer);
+    messagePointer = s.addCStringToBuffer(name, messagePointer);
+
+    messagePointer = s.addIntBufferToBuffer(argTypes, argTypesLength, messagePointer);
     for(int i = 0; i < argTypesLength-1; i++)
     {
-         int argType = *argTypesP;
+         int argType = argTypes[i];
+
         unsigned short length = r.getArrayLengthFromArgumentType(argType);
         if(length == 0) length= 1;
-        int type = getTypeFromArgumentType(argType);/*
+        int type = r.getTypeFromArgumentType(argType);/*
         char *addShortToBuffer(short s, char *bufferP);
         char *addIntToBuffer(int i, char *bufferP);
         char *addStringToBuffer(string s, char *bufferP);
         char *addIntBufferToBuffer(int intBuf[], int numInts, char *bufferP);
         char *addUnsignedIntToBuffer(unsigned int u, char *bufferP);*/
+
+        void * arg = args[i];
+        cout << "type "<<type<<endl;
         switch(type)
         {
             case ARG_CHAR:
-            messagePointer = addCharToBuffer()
+            //messagePointer = addCharToBuffer()
 
             break;
             case ARG_SHORT:
 
             break;
             case ARG_INT:
-
+            {
+                int * ints = (int *)arg;
+                for(int j = 0; j < length; j++)
+                {
+                    cout << "HERE "<<ints[j]<<endl;
+                    messagePointer = s.addIntToBuffer(ints[j], messagePointer);
+                }
+            }
             break;
             case ARG_LONG:
 
@@ -100,10 +131,22 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
         }
     }
 
+    cout << "Message "<<messageSize<<": "<<endl;
+    for(int i = 0; i < messageSize+8; i++)
+    {
+        cout << (int)message[i] << " ";
 
-    sendArray(messageSize + 8, message);
+    }
+    cout << endl;
+    s.sendArray(messageSize + 8, message);
 }
 int rpcCall(char* name, int* argTypes, void** args) {
     cerr << "RPC CALL" << endl;
-    return sendLocRequest(string(name), argTypes);
+        char * binderAddressString = getenv ("BINDER_ADDRESS");
+    char * binderPortString = getenv("BINDER_PORT");
+    binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
+
+    cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
+    //return sendLocRequest(string(name), argTypes);
+    return 0;
 }

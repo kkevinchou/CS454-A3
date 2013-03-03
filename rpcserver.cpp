@@ -99,6 +99,13 @@ void printSettings(int localSocketFd) {
 
 void handleExecuteMessage(char * message, unsigned int messageSize)
 {
+
+	cout << "received "<<messageSize<<": ";
+	for(int i = 0; i < messageSize; i++)
+	{
+		cout << (int)message[i]<<" ";
+	}
+	cout << endl;
 	Receiver receiver(0);
  // string recvStr(buffer, buffer+size);
 	// cout << recvStr << endl;
@@ -110,14 +117,14 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 
 	char * bufferPointer = message;
 	bufferPointer = receiver.extractString(bufferPointer, name);
-
+cout << "Name: "<<name<<endl;
 	cout << "A " << bufferPointer <<endl;
 
 	unsigned int argTypesLength = receiver.returnArgTypesLength(bufferPointer);
 
 	cout << "A' " << bufferPointer <<endl;
 	int argTypes[argTypesLength];
-	receiver.extractArgTypes(bufferPointer, argTypes);
+	bufferPointer = receiver.extractArgTypes(bufferPointer, argTypes);
 
 	void * args[argTypesLength];
 
@@ -191,14 +198,16 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 
 		}
 
-		cout << "name: "<<name<<endl;
-        cout << "argTypes: ";
-        for(int i = 0; i < argTypesLength; i++)
-        {
-            cout << argTypes[i] << " ";
-        }
-        cout << endl;
+
 	}
+		cout << "name: "<<name<<endl;
+    cout << "argTypes: ";
+    for(int i = 0; i < argTypesLength-1; i++)
+    {
+        cout << argTypes[i] << " ";
+        cout << *((int *)args[i])<< " ";
+    }
+    cout << endl;
 	
 }
 

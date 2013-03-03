@@ -20,6 +20,7 @@ class Sender
         char *addIntBufferToBuffer(int intBuf[], int numInts, char *bufferP);
         char *addUnsignedIntToBuffer(unsigned int u, char *bufferP);
         char *addCharToBuffer(char c, char *bufferP);
+        char *addCStringToBuffer(char * c, char *bufferP );
         // char *addDoubleToBuffer(double d, char *bufferP);
         // char *addFloatToBuffer(float f, char *bufferP);
         char *addLongToBuffer(long l, char *bufferP);

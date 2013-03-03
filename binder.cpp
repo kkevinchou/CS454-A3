@@ -16,7 +16,7 @@
 #include "sender.h"
 #include "receiver.h"
 #include "helpers.h"
-
+#include "constants.h"
 #include "rpcserver.h" // for the typedef
 
 using namespace std;
@@ -140,7 +140,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
 }
 
 int main(int argc, char *argv[]) {
-
     int localSocketFd = createSocket();
     if (localSocketFd < 0) {
         error("ERROR: Failed to open socket");

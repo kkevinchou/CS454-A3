@@ -49,7 +49,18 @@ int Sender::sendArray(unsigned int length, char data[])
 
 	return sentSize;
 }
-
+char *Sender::addCStringToBuffer(char * c, char *bufferP )
+{
+	while(*c != '\0')
+	{
+		*bufferP = *c;
+		bufferP++;
+		c++;
+	}
+	*bufferP = *c;
+	bufferP++;
+	return bufferP;
+}
 char * Sender::addStringToBuffer(string s, char *bufferP)
 {
 	unsigned int i = 0;

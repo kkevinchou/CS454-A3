@@ -5,6 +5,17 @@
 
 using namespace std;
 
+union DataTypeConversion
+{
+    unsigned int ui;
+    int i;
+    double d;
+    float f;
+    long l;
+    short s;
+    char  cs[8];
+};
+
 enum MessageType
 {
 	ERROR = 0,

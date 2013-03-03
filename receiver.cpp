@@ -216,7 +216,7 @@ unsigned int Receiver::returnArgTypesLength(char * head)
 
         int type;
         head = extractInt(head, type);
-        if(head == 0) break;
+        if(type == 0) break;
         
     }
 

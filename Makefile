@@ -11,12 +11,12 @@ EXEC2 = server				# 2st executable name
 OBJECTS3 = client.o helpers.o sender.o receiver.o rpcclient.o constants.o
 EXEC3 = client				# 3rd executable name
 
-OBJECTS3 = client1.o helpers.o sender.o receiver.o rpcclient.o constants.o
-EXEC3 = client1				# 3rd executable name
+OBJECTS4 = client1.o helpers.o sender.o receiver.o rpcclient.o constants.o
+EXEC4 = client1				# 3rd executable name
 
-OBJECTS = ${OBJECTS1} ${OBJECTS2} ${OBJECTS3}				# all object files
+OBJECTS = ${OBJECTS1} ${OBJECTS2} ${OBJECTS3}	${OBJECTS4}			# all object files
 DEPENDS = ${OBJECTS:.o=.d}			# substitute ".o" with ".d"
-EXECS = ${EXEC1} ${EXEC2} ${EXEC3}				# all executables
+EXECS = ${EXEC1} ${EXEC2} ${EXEC3}	${EXEC4}				# all executables
 
 #############################################################
 
@@ -33,6 +33,8 @@ ${EXEC2} : ${OBJECTS2}				# link step 1st executable
 ${EXEC3} : ${OBJECTS3}				# link step 1st executable
 	${CXX} $^ -o $@ -lpthread
 
+${EXEC4} : ${OBJECTS4}				# link step 1st executable
+	${CXX} $^ -o $@ -lpthread
 #############################################################
 
 ${OBJECTS} : ${MAKEFILE_NAME}			# OPTIONAL : changes to this file => recompile
