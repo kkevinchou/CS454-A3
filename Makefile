@@ -11,6 +11,9 @@ EXEC2 = server				# 2st executable name
 OBJECTS3 = client.o helpers.o sender.o receiver.o rpcclient.o constants.o
 EXEC3 = client				# 3rd executable name
 
+OBJECTS3 = client1.o helpers.o sender.o receiver.o rpcclient.o constants.o
+EXEC3 = client1				# 3rd executable name
+
 OBJECTS = ${OBJECTS1} ${OBJECTS2} ${OBJECTS3}				# all object files
 DEPENDS = ${OBJECTS:.o=.d}			# substitute ".o" with ".d"
 EXECS = ${EXEC1} ${EXEC2} ${EXEC3}				# all executables

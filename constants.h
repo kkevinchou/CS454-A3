@@ -34,6 +34,11 @@ struct rpcFunctionKey
     string name;
     int *argTypes;
     rpcFunctionKey(string name, int *argTypes) : name(name), argTypes(argTypes){}
+
+    rpcFunctionKey(const struct rpcFunctionKey & r) {
+        name = r.name;
+        argTypes = r.argTypes;
+    }
 };
 
 bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r);

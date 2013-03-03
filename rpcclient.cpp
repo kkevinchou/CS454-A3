@@ -34,5 +34,6 @@ int sendLocRequest(string name, int argTypes[]) {
 }
 
 int rpcCall(char* name, int* argTypes, void** args) {
+    cerr << "RPC CALL" << endl;
     return sendLocRequest(string(name), argTypes);
 }

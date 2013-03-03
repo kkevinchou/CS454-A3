@@ -21,9 +21,9 @@
 
 using namespace std;
 
-map<rpcFunctionKey, server_info> servicesDictionary;
-map<int, unsigned int> chunkInfo;
-map<int, MessageType> msgInfo;
+static map<rpcFunctionKey, server_info> servicesDictionary;
+static map<int, unsigned int> chunkInfo;
+static map<int, MessageType> msgInfo;
 
 void printSettings(int localSocketFd) {
     char localHostName[256];
@@ -48,24 +48,45 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
     bufferPointer = receiver.extractShort(bufferPointer, port);
     bufferPointer = receiver.extractString(bufferPointer, name);
 
-    unsigned int argTypesLength = (bufferSize - serverID.size() - 1 - 2 - name.size() - 1)/4;
+    unsigned int serverIDSize = serverID.size() + 1;
+    unsigned int portSize = 2;
+    unsigned int nameSize = name.size() + 1;
 
-    int argTypes[argTypesLength];
+    unsigned int argTypesLength = (bufferSize - serverIDSize - portSize - nameSize) / 4;
+    int *argTypes = (int *)malloc(argTypesLength * sizeof(int));
     receiver.extractArgTypes(bufferPointer, argTypes);
-
-    cerr << "serverID: "<<serverID<<endl;
-    cerr << "port: "<< port<<endl;
-    cerr << "name: "<<name<<endl;
-    cerr << "argTypes: ";
-    for(int i = 0; i < argTypesLength; i++)
-    {
-        cerr << argTypes[i] << " ";
-    }
-    cerr << endl;
 
     rpcFunctionKey key(name, argTypes);
     server_info location(serverID, port);
-    servicesDictionary[key] = location;
+
+    if (servicesDictionary.find(key) != servicesDictionary.end()) {
+        cerr << "Registration of given function found, ignoring registration!" << endl;
+        free(argTypes);
+    } else {
+        cerr << "Registration of given function not found, registering now..." << endl;
+        servicesDictionary[key] = location;
+    }
+}
+
+void handleLocRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
+    string name;
+
+    char * bufferPointer = buffer;
+    bufferPointer = receiver.extractString(bufferPointer, name);
+
+    unsigned int nameSize = name.size() + 1;
+
+    unsigned int argTypesLength = (bufferSize - nameSize) / 4;
+    int argTypes[argTypesLength];
+    receiver.extractArgTypes(bufferPointer, argTypes);
+
+    rpcFunctionKey key(name, argTypes);
+
+    if (servicesDictionary.find(key) != servicesDictionary.end()) {
+        cerr << "LOC REQ FOUND!" << endl;
+    } else {
+        cerr << "LOC REQ NOT FOUND!" << endl;
+    }
 }
 
 void handleRequest(int clientSocketFd, fd_set *master_set) {
@@ -98,6 +119,11 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
                     handleRegisterRequest(receiver, buffer, size);
                     break;
                 }
+                case LOC_REQUEST:
+                {
+                    handleLocRequest(receiver, buffer, size);
+                    break;
+                }
             }
         }
         else
@@ -114,6 +140,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
 }
 
 int main(int argc, char *argv[]) {
+
     int localSocketFd = createSocket();
     if (localSocketFd < 0) {
         error("ERROR: Failed to open socket");
@@ -144,7 +171,6 @@ int main(int argc, char *argv[]) {
                     int clientSocketFd = i;
                     handleRequest(clientSocketFd, &master_set);
                 } else {
-                    cout << "accept connection"<<endl;
                     int newSocketFd = acceptConnection(localSocketFd);
                     max_fd = newSocketFd;
                     FD_SET(newSocketFd, &master_set);

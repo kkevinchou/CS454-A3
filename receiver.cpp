@@ -137,7 +137,7 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
     {
         memset(bufferPointer,0,sizeLeft);
         n = recv(_sfd,bufferPointer,sizeLeft, 0);
-        cerr << "Receiving..."<<sizeLeft<<endl;
+        if (debug) cerr << "Receiving..."<<sizeLeft<<endl;
         if(n == 0)
         {
             cerr << "Connection closed"<<endl;
@@ -156,7 +156,7 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
 
     if (debug)
     {
-        cerr << "Received: ";
+        if (debug) cerr << "Received: ";
         for(unsigned int i = 0; i < messageSize; i++)
         {
             cerr << (int)ret[i] << " ";
