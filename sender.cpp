@@ -105,10 +105,9 @@ int Sender::sendRegisterMessage(string serverID, short port, string name, int ar
 	int portSize = 2;
 	int nameSize = name.size() + 1;
 	int argTypesSize = argTypesLength;
+	// TODO: calculate argTypesLength in here rather than accept as a parameter
 
  	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesSize*4;
-//cout << messageSize << " " << serverIdSize << " " << portSize << " "<< nameSize <<endl;
-cout << serverID << " " << port << " " << name << endl;
  	char buffer[messageSize+8];
  	char *bufferP = buffer;
 
@@ -119,7 +118,27 @@ cout << serverID << " " << port << " " << name << endl;
  	bufferP = addStringToBuffer(name, bufferP);
  	bufferP = addIntBufferToBuffer(argTypes, argTypesLength, bufferP);
 
- 	sendArray(messageSize+8, buffer);
+ 	sendArray(messageSize + 8, buffer);
+
+ 	return 0;
+}
+
+int Sender::sendLocRequestMessage(string name, int argTypes[]) {
+	int nameSize = name.size() + 1;
+	int argTypesLength = 0;
+
+	while (argTypes[argTypesLength++]);
+
+	unsigned int messageSize = nameSize + argTypesLength * 4;
+	char buffer[messageSize+8];
+	char *bufferP = buffer;
+
+	bufferP = addUnsignedIntToBuffer(messageSize, bufferP);
+ 	bufferP = addIntToBuffer(static_cast<int>(LOC_REQUEST), bufferP);
+	bufferP = addStringToBuffer(name, bufferP);
+ 	bufferP = addIntBufferToBuffer(argTypes, argTypesLength, bufferP);
+
+ 	sendArray(messageSize + 8, buffer);
 
  	return 0;
 }
