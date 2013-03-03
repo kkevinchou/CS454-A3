@@ -19,13 +19,13 @@ int Sender::sendArray(unsigned int length, char data[])
 	{
 		cout << "Sending size "<<length<<endl;
 		 cout << "Sending: ";
-		 for(int i = 0; i < length; i++)
+		 for(unsigned int i = 0; i < length; i++)
 		 {
 		 	cout << (int)data[i] << " ";
 		 }
 		 cout << endl;
 	}
-	
+
 	while(true)
 	{
 		// send the first 4 bytes

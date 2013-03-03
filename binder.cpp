@@ -21,10 +21,9 @@
 
 using namespace std;
 
-struct location {
-    string id;
-    int port;
-};
+map<rpcFunctionKey, server_info> servicesDictionary;
+map<int, unsigned int> chunkInfo;
+map<int, MessageType> msgInfo;
 
 void printSettings(int localSocketFd) {
     char localHostName[256];
@@ -39,26 +38,49 @@ void printSettings(int localSocketFd) {
 
 extern bool debug;
 
-void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
+void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
+    string serverID;
+    short port;
+    string name;
+
+    char * bufferPointer = buffer;
+    bufferPointer = receiver.extractString(bufferPointer, serverID);
+    bufferPointer = receiver.extractShort(bufferPointer, port);
+    bufferPointer = receiver.extractString(bufferPointer, name);
+
+    unsigned int argTypesLength = (bufferSize - serverID.size() - 1 - 2 - name.size() - 1)/4;
+
+    int argTypes[argTypesLength];
+    receiver.extractArgTypes(bufferPointer, argTypes);
+
+    cerr << "serverID: "<<serverID<<endl;
+    cerr << "port: "<< port<<endl;
+    cerr << "name: "<<name<<endl;
+    cerr << "argTypes: ";
+    for(int i = 0; i < argTypesLength; i++)
+    {
+        cerr << argTypes[i] << " ";
+    }
+    cerr << endl;
+
+    rpcFunctionKey key(name, argTypes);
+    server_info location(serverID, port);
+    servicesDictionary[key] = location;
+}
+
+void handleRequest(int clientSocketFd, fd_set *master_set) {
     Receiver receiver(clientSocketFd);
     bool closed = false;
 
     if (chunkInfo[clientSocketFd] == 0) {
         int numBytes = receiver.receiveMessageSize();
-
-         //   cout << "nb" << nb << " " << numBytes<<endl;
         if(numBytes >= 0 )
         {
             unsigned int nb = (unsigned int)numBytes;
             chunkInfo[clientSocketFd] = nb;
 
-
-            // TODO : HANDLE OTHER MESSAGE TYPES
-            if (receiver.receiveMessageType() == REGISTER) {
-                cout << "Received REGISTER message"<<endl;
-            } else {
-                closed = true;
-            }
+            MessageType msgType = receiver.receiveMessageType();
+            msgInfo[clientSocketFd] = msgType;
         }
         else
         {
@@ -69,46 +91,19 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
         char buffer[size];
         if (receiver.receiveMessageGivenSize(size, buffer) == 0)
         {
-
             chunkInfo[clientSocketFd] = 0;
-            // string recvStr(buffer, buffer+size);
-            // cout << recvStr << endl;
-
-            // Sender s(clientSocketFd);
-            // s.sendMessage(recvStr);
-            string serverID;
-            short port;
-            string name;
-
-            char * bufferPointer = buffer;
-            bufferPointer = receiver.extractString(bufferPointer, serverID);
-            bufferPointer = receiver.extractShort(bufferPointer, port);
-            bufferPointer = receiver.extractString(bufferPointer, name);
-
-            unsigned int argTypesLength = (size - serverID.size() - 1 - 2 - name.size() - 1)/4;
-
-
-            int argTypes[argTypesLength];
-            receiver.extractArgTypes(bufferPointer, argTypes);
-
-
-            cout << "serverID: "<<serverID<<endl;
-            cout << "port: "<< port<<endl;
-            cout << "name: "<<name<<endl;
-            cout << "argTypes: ";
-            for(int i = 0; i < argTypesLength; i++)
-            {
-                cout << argTypes[i] << " ";
+            switch (msgInfo[clientSocketFd]) {
+                case REGISTER:
+                {
+                    handleRegisterRequest(receiver, buffer, size);
+                    break;
+                }
             }
-            cout << endl;
-
         }
         else
         {
             closed = true;
         }
-
-      
     }
 
     if (closed) {
@@ -133,8 +128,6 @@ int main(int argc, char *argv[]) {
     FD_ZERO(&master_set);
     FD_SET(localSocketFd, &master_set);
 
-    map<int, unsigned int> chunkInfo;
-
     while (true) {
         memcpy(&working_set, &master_set, sizeof(master_set));
         int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
@@ -149,7 +142,7 @@ int main(int argc, char *argv[]) {
             if (FD_ISSET(i, &working_set)) {
                 if (i != localSocketFd) {
                     int clientSocketFd = i;
-                    handleRequest(clientSocketFd, &master_set, chunkInfo);
+                    handleRequest(clientSocketFd, &master_set);
                 } else {
                     cout << "accept connection"<<endl;
                     int newSocketFd = acceptConnection(localSocketFd);
