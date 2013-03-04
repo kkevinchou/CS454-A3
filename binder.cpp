@@ -39,17 +39,27 @@ void addService(string name, int argTypes[], string serverID, unsigned short por
         // need to allocate memory for the key on the heap.
         unsigned int argTypesLength = 0;
         while (argTypes[argTypesLength++]);
-        int *memArgTypes = (int *)malloc(argTypesLength * sizeof(int));
+        int *memArgTypes = new int[argTypesLength];
         unsigned int i = 0;
         while (memArgTypes[i] = argTypes[i++]);
         key = rpcFunctionKey(name, memArgTypes);
-        cerr << "NEW KEY" << endl;
         servicesDictionary[key] = new list<server_info *>();
+        cerr << "NEW KEY" << endl;
+    } else {
+        cerr << "OLD KEY" << endl;
     }
 
     list<server_info *> *hostList = servicesDictionary[key];
     server_info *l = new server_info(location);
-    hostList->remove(l);
+
+    for (list<server_info *>::iterator it = hostList->begin(); it != hostList->end(); it++) {
+        server_info *oldServerInfo = *it;
+        if (*oldServerInfo == *l) {
+            hostList->remove(oldServerInfo);
+            delete oldServerInfo;
+        }
+    }
+
     hostList->push_back(l);
 }
 

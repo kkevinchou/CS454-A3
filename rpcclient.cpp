@@ -91,7 +91,7 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
     {
         case EXECUTE_SUCCESS:
         {
-            // extract argument data 
+            // extract argument data
             if(debug)cout << "Success!"<<endl;
             char * replyMessageP = replyMessage;
             unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
@@ -107,7 +107,7 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
                 cerr << "WARNING: wrong function name returned"<<endl;
             }
 
-            
+
         }
         break;
         case EXECUTE_FAILURE:
@@ -159,9 +159,12 @@ int rpcCall(char* name, int* argTypes, void** args) {
     sendLocRequest(string(name), argTypes);
 
     string serverID;
-    unsigned short port = 13;
+    unsigned short port;
+    int locCode = processLocResponse(serverID, port);
 
-    processLocResponse(serverID, port);
+    if (locCode == -1) {
+        return locCode;
+    }
 
     cerr << "SERVER : " << serverID << endl;
     cerr << "PORT : " << port << endl;
