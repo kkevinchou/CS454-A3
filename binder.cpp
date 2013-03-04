@@ -40,8 +40,14 @@ void addService(string name, int argTypes[], string serverID, unsigned short por
         unsigned int argTypesLength = 0;
         while (argTypes[argTypesLength++]);
         int *memArgTypes = new int[argTypesLength];
+
         unsigned int i = 0;
-        while (memArgTypes[i] = argTypes[i++]);
+        while (argTypes[i] != 0) {
+            memArgTypes[i] = argTypes[i];
+            i++;
+        }
+        memArgTypes[i] = 0;
+
         key = rpcFunctionKey(name, memArgTypes);
         servicesDictionary[key] = new list<server_info *>();
         cerr << "NEW KEY" << endl;
@@ -136,17 +142,14 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
         if (receiver.receiveMessageGivenSize(size, buffer) == 0)
         {
             chunkInfo[clientSocketFd] = 0;
-            switch (msgInfo[clientSocketFd]) {
-                case REGISTER:
-                {
-                    handleRegisterRequest(receiver, buffer, size);
-                    break;
-                }
-                case LOC_REQUEST:
-                {
-                    handleLocRequest(receiver, sender, buffer, size);
-                    break;
-                }
+            MessageType msgType = msgInfo[clientSocketFd];
+
+            if (msgType == REGISTER) {
+                handleRegisterRequest(receiver, buffer, size);
+            } else if (msgType == LOC_REQUEST) {
+                handleLocRequest(receiver, sender, buffer, size);
+            } else {
+                cerr << "[BINDER] UNHANDLED MESSAGE TYPE: " << static_cast<int>(msgType) << endl;
             }
         }
         else

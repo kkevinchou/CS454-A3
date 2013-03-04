@@ -8,8 +8,7 @@
 #include "rwbuffer.h"
 using namespace std;
 
-static bool debug = true;
-
+static bool debug = false;
 
 //Constructor
 int Receiver::getSocketFD()
