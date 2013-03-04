@@ -39,7 +39,7 @@ int rpcInit() {
     }
 
     localSocketFd = createSocket();
-    listenOnSocket(localSocketFd);
+   
     printSettings(localSocketFd);
 
     if (localSocketFd < 0) {
@@ -382,7 +382,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 int rpcExecute()
 {
 	if(registeredFunctions.size() == 0) return -1; // no functions to serve
-
+ listenOnSocket(localSocketFd);
     printSettings(localSocketFd);
 
     int max_fd = localSocketFd;
