@@ -31,8 +31,11 @@ int sendLocRequest(string name, int argTypes[]) {
     }
 
     Sender s(binderSocketFd);
+    s.sendLocRequestMessage(name, argTypes);
 
-    return s.sendLocRequestMessage(name, argTypes);
+    Receiver r(binderSocketFd);
+
+    return 0;
 }
 
 
@@ -40,7 +43,7 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
 {
     RWBuffer b;
     Sender s(binderSocketFd);
-    
+
     unsigned int messageSize = getClientServerMessageLength(name, argTypes, args);
 
 
@@ -56,7 +59,7 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
    // char * messagePointer = message;
   //  messagePointer = b.insertUnsignedIntToBuffer(messageSize, messagePointer);
    // messagePointer = b.insertIntToBuffer(static_cast<int>(EXECUTE), messagePointer);
-   
+
    insertClientServerMessageToBuffer(message, name, argTypes, args);
 
     if(debug)
@@ -76,11 +79,11 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
 
 int rpcCall(char* name, int* argTypes, void** args) {
     // cerr << "RPC CALL" << endl;
-   // sendLocRequest(string(name), argTypes);
-     char * binderAddressString = getenv ("BINDER_ADDRESS");
-     char * binderPortString = getenv("BINDER_PORT");
-     binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
+    sendLocRequest(string(name), argTypes);
+    // char * binderAddressString = getenv ("BINDER_ADDRESS");
+    // char * binderPortString = getenv("BINDER_PORT");
+    // binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
-     cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
+    // cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
     return 0;
 }

@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <list>
 #include <strings.h>
 #include <cstring>
 #include <stdio.h>
@@ -17,16 +18,40 @@
 #include "receiver.h"
 #include "helpers.h"
 #include "constants.h"
-#include "rpcserver.h" // for the typedef
+#include "rpc.h" // for the typedef
 #include "rwbuffer.h"
 
 using namespace std;
 
-static map<rpcFunctionKey, server_info> servicesDictionary;
+static map<rpcFunctionKey, list<server_info *>* > servicesDictionary;
+// static map<int, server_info>
 static map<int, unsigned int> chunkInfo;
 static map<int, MessageType> msgInfo;
 
 extern bool debug;
+
+void addService(string name, int argTypes[], string serverID, unsigned short port) {
+    rpcFunctionKey key(name, argTypes);
+    server_info location(serverID, port);
+
+    if (servicesDictionary.find(key) == servicesDictionary.end()) {
+        // The key doesn't exist.  Since argTypes is allocated on the stack, we
+        // need to allocate memory for the key on the heap.
+        unsigned int argTypesLength = 0;
+        while (argTypes[argTypesLength++]);
+        int *memArgTypes = (int *)malloc(argTypesLength * sizeof(int));
+        unsigned int i = 0;
+        while (memArgTypes[i] = argTypes[i++]);
+        key = rpcFunctionKey(name, memArgTypes);
+        cerr << "NEW KEY" << endl;
+        servicesDictionary[key] = new list<server_info *>();
+    }
+
+    list<server_info *> *hostList = servicesDictionary[key];
+    server_info *l = new server_info(location);
+    hostList->remove(l);
+    hostList->push_back(l);
+}
 
 void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
     string serverID;
@@ -42,23 +67,12 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
     unsigned int serverIDSize = serverID.size() + 1;
     unsigned int portSize = 2;
     unsigned int nameSize = name.size() + 1;
-
     unsigned int argTypesLength = (bufferSize - serverIDSize - portSize - nameSize) / 4;
-    int *argTypes = (int *)malloc(argTypesLength * sizeof(int));
+
+    int argTypes[argTypesLength];
     b.extractArgTypes(bufferPointer, argTypes);
 
-    rpcFunctionKey key(name, argTypes);
-    server_info location(serverID, port);
-
-    if (servicesDictionary.find(key) != servicesDictionary.end()) {
-        cerr << "Registration of given function found, ignoring registration!" << endl;
-        free(argTypes);
-    } else {
-        cerr << "Registration of given function not found, registering now..." << endl;
-        cerr << "server_identifier = " << location.server_identifier << endl;
-        cerr << "port = " << location.port << endl;
-        servicesDictionary[key] = location;
-    }
+    addService(name, argTypes, serverID, port);
 }
 
 void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize) {
@@ -77,10 +91,10 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
 
     if (servicesDictionary.find(key) != servicesDictionary.end()) {
         cerr << "LOC REQ FOUND!" << endl;
-        server_info location = servicesDictionary[key];
-        cerr << "server_identifier = " << location.server_identifier << endl;
-        cerr << "port = " << location.port << endl;
-        sender.sendLocSuccessMessage(location.server_identifier, location.port);
+        server_info *location = servicesDictionary[key]->front();
+        cerr << "server_identifier = " << location->server_identifier << endl;
+        cerr << "port = " << location->port << endl;
+        sender.sendLocSuccessMessage(location->server_identifier, location->port);
     } else {
         cerr << "LOC REQ NOT FOUND!" << endl;
         sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
@@ -94,7 +108,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
     bool closed = false;
     unsigned int messageSize;
     if (chunkInfo[clientSocketFd] == 0) {
-
          //   cout << "nb" << nb << " " << numBytes<<endl;
         if(receiver.receiveMessageSize(messageSize) == 0 )
         {

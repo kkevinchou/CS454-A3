@@ -8,7 +8,7 @@
 #include "rwbuffer.h"
 using namespace std;
 
-static bool debug = false;
+static bool debug = true;
 
 
 //Constructor
@@ -53,8 +53,6 @@ int Receiver::receiveMessageSize(unsigned int &i)
     }
     else return -1;
 }
-
-
 
 // returns a message char * of length MessageSize (including null termination char if one exists)
 int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
@@ -117,13 +115,9 @@ string Receiver::receiveMessageAsString()
             return ret;
         }
     }
-  
+
 
     return "";
-    
+
 
 }
-
-
-
-

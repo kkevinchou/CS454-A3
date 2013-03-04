@@ -50,7 +50,6 @@ int Sender::sendArray(unsigned int length, char data[])
 	return sentSize;
 }
 
-
 int Sender::getSocketFD()
 {
 	return _sfd;
@@ -100,8 +99,7 @@ Sender::Sender(int socketFileDescriptor)
 === PROTOCOL FUNCTIONS
 *****************************************************/
 
-int Sender::sendRegisterMessage(string serverID, unsigned short port, string name, int argTypes[])
-{
+int Sender::sendRegisterMessage(string serverID, unsigned short port, string name, int argTypes[]) {
 	unsigned int serverIdSize = serverID.size() + 1;
 	unsigned int portSize = 2;
 	unsigned int nameSize = name.size() + 1;

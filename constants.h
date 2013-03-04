@@ -43,7 +43,14 @@ struct server_info {
         server_identifier = "";
         port = 0;
     }
+
+    server_info(const struct server_info &r) {
+        server_identifier = r.server_identifier;
+        port = r.port;
+    }
 };
+
+bool operator == (const server_info &l, const server_info &r);
 
 struct rpcFunctionKey
 {

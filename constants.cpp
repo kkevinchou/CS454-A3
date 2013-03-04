@@ -45,6 +45,10 @@ using namespace std;
 //     }
 // }
 
+bool operator == (const server_info &l, const server_info &r) {
+    return (l.server_identifier == r.server_identifier && l.port == r.port);
+}
+
 bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r)
 {
     // cerr << "operator <!" << endl;
