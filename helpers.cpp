@@ -83,16 +83,15 @@ void error(string msg)
     cerr << msg << endl;
     exit(-1);
 }
-
-int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPortString)
+int setupSocketAndReturnDescriptor(const char * serverAddressString, int serverPort)
 {
-    int socketFileDescriptor;
-    int serverPort;
+        int socketFileDescriptor;
+
 
     struct sockaddr_in serverAddressStruct;
     struct hostent *server;
 
-    serverPort = atoi(serverPortString);
+
     socketFileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFileDescriptor < 0)
     {
@@ -123,6 +122,11 @@ int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPort
     }
 
     return socketFileDescriptor;
+}
+int setupSocketAndReturnDescriptor(const char * serverAddressString, char * serverPortString)
+{
+    int serverPort = atoi(serverPortString);
+    return setupSocketAndReturnDescriptor(serverAddressString, serverPort);
 }
 
 int createSocket() {

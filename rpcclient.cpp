@@ -37,10 +37,10 @@ int sendLocRequest(string name, int argTypes[]) {
 }
 
 
-int sendExecuteRequest(char* name, int* argTypes, void**args)
+int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
 {
     RWBuffer b;
-    Sender s(binderSocketFd);
+    Sender s(serverSocketFd);
 
     unsigned int messageSize = getClientServerMessageLength(name, argTypes, args);
 
@@ -76,7 +76,7 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
     if(sendResult != 0) return sendResult;
     if(debug) cout << " ...Listening for reply..."<<endl;
     // listen for a reply
-    Receiver r(binderSocketFd);
+    Receiver r(serverSocketFd);
     r.receiveMessageSize(messageSize);
 
     MessageType type = r.receiveMessageType();
@@ -170,8 +170,10 @@ int rpcCall(char* name, int* argTypes, void** args) {
     cerr << "PORT : " << port << endl;
     // char * binderAddressString = getenv ("BINDER_ADDRESS");
     // char * binderPortString = getenv("BINDER_PORT");
-    // binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
+    int serverSocketFd = setupSocketAndReturnDescriptor(serverID.c_str(), port);
 
-    // cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
+    int n = sendExecuteRequest(serverSocketFd,name, argTypes, args);
+
+    close(serverSocketFd);
     return 0;
 }

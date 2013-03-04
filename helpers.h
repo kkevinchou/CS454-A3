@@ -15,8 +15,8 @@ return values:
 using namespace std;
 
 void error(string msg);
-int setupSocketAndReturnDescriptor(char * serverAddressString, char * serverPortString);
-
+int setupSocketAndReturnDescriptor(const char * serverAddressString, char * serverPortString);
+int setupSocketAndReturnDescriptor(const char * serverAddressString, int serverPort);
 int createSocket();
 
 // Server Helpers
