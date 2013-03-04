@@ -89,7 +89,7 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	return 0;
 }
 
-void handleExecuteMessage(char * message, unsigned int messageSize)
+void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messageSize)
 {
 	
 	if(debug){
@@ -102,6 +102,7 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 	}
 	cout << endl;
 	RWBuffer b;
+	
  // string recvStr(buffer, buffer+size);
 	// cout << recvStr << endl;
 
@@ -118,31 +119,65 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 	unsigned int argTypesLength = b.returnArgTypesLength(bufferPointer);
 	int argTypes[argTypesLength];
 	void * args[argTypesLength];
+
 	int n = extractArgumentsMessage(bufferPointer, argTypes, args, argTypesLength);
 
 	// handle request
 	// name, argTypes, args
-	struct rpcFunctionKey k(string(name), argTypes);
-	skeleton s = registeredFunctions[k];
+
+	struct rpcFunctionKey k(name, argTypes);
+	skeleton skel = registeredFunctions[k];
 
 	int failCode = 0;
 
-	if(s == NULL){ 
+	Sender s(clientSocketFd);
+
+	if(skel == NULL){ 
 		// error, function not found. send fail message
 		failCode = -1;
 	}
 	else
 	{
-		int r = s(argTypes, args);
+		// call the skeleton
+		int r = skel(argTypes, args);
 		if(r == 0)
 		{
 			// send success message
+			char returnMessage[messageSize];
+
+			insertClientServerMessageToBuffer(returnMessage, name.c_str(), argTypes, args);
+		    if(debug)
+		    {
+		        cout << endl;
+		        cout << "Name: " << name<<endl;
+		    }
+
+		    if(debug)
+		    {
+		        cout << "Sending an EXECUTE_SUCCESS message of size "<<messageSize << ": "<<endl;
+		        for(int i = 0; i < messageSize; i++)
+		        {
+		            cout << (int)message[i] << " ";
+
+		        }
+		        cout << endl;
+		    }
+		    int r = s.sendMessage(messageSize, EXECUTE_SUCCESS, returnMessage);
+		    if(r != 0) cerr << "WARNING: Send EXECUTE_SUCESS message failed"<<endl;
 		}
 		else
 		{
 			// send fail message
 			failCode = -1;
 		}
+	}
+
+	if(failCode < 0)
+	{
+		// send fail message
+		char failureCodeMessage[1];
+		failureCodeMessage[0] = -1;
+		int r = s.sendMessage(4, EXECUTE_FAILURE, failureCodeMessage);
 	}
 
 }
@@ -170,7 +205,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 	        {
 
 	        	// TODO: handle in another thread in the future
-	           	handleExecuteMessage(buffer, messageSize);
+	           	handleExecuteMessage(clientSocketFd,buffer, messageSize);
 
 
 	            success = true;

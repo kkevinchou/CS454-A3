@@ -25,7 +25,7 @@ class RWBuffer
         char *insertLongToBuffer(long l, char *bufferP);
         char *insertUnsignedShortToBuffer(unsigned short us, char *bufferP);
         // insert arrays of data
-		char *insertCStringToBuffer(char * c, char *bufferP );
+		char *insertCStringToBuffer(const char * c, char *bufferP );
      	char *insertIntArrayToBuffer(int intBuf[], int numInts, char *bufferP);
 		char * insertDoubleArrayToBuffer(double doubleArray[], int length, char *bufferP);
 		char * insertFloatArrayToBuffer(float floatArray[], int length, char *bufferP) ;
