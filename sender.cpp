@@ -88,6 +88,7 @@ int Sender::sendMessage(unsigned int messageSize, MessageType msgType, char mess
  	}
 
  	sendArray(messageSize + 8, buffer);
+ 	return 0;
 }
 
 Sender::Sender(int socketFileDescriptor)
@@ -101,10 +102,10 @@ Sender::Sender(int socketFileDescriptor)
 
 int Sender::sendRegisterMessage(string serverID, short port, string name, int argTypes[])
 {
-	int serverIdSize = serverID.size() + 1;
-	int portSize = 2;
-	int nameSize = name.size() + 1;
-	int argTypesLength = 0;
+	unsigned int serverIdSize = serverID.size() + 1;
+	unsigned int portSize = 2;
+	unsigned int nameSize = name.size() + 1;
+	unsigned int argTypesLength = 0;
 	while (argTypes[argTypesLength++]);
 
  	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesLength * 4;
@@ -123,8 +124,8 @@ int Sender::sendRegisterMessage(string serverID, short port, string name, int ar
 }
 
 int Sender::sendLocRequestMessage(string name, int argTypes[]) {
-	int nameSize = name.size() + 1;
-	int argTypesLength = 0;
+	unsigned int nameSize = name.size() + 1;
+	unsigned int argTypesLength = 0;
 	while (argTypes[argTypesLength++]);
 
 	unsigned int messageSize = nameSize + argTypesLength * 4;
@@ -136,6 +137,38 @@ int Sender::sendLocRequestMessage(string name, int argTypes[]) {
  	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
 
  	sendMessage(messageSize, LOC_REQUEST, buffer);
+
+ 	return 0;
+}
+
+int Sender::sendLocSuccessMessage(string serverID, short port) {
+	unsigned int serverIdSize = serverID.size() + 1;
+	unsigned int portSize = 2;
+
+	unsigned int messageSize = serverIdSize + portSize;
+	char buffer[messageSize];
+	char *bufferP = buffer;
+
+	RWBuffer b;
+	bufferP = b.insertStringToBuffer(serverID, bufferP);
+ 	bufferP = b.insertShortToBuffer(port, bufferP);
+
+ 	sendMessage(messageSize, LOC_SUCCESS, buffer);
+
+ 	return 0;
+}
+
+int Sender::sendLocFailureMessage(ReasonCode reasonCode) {
+	unsigned int reasonCodeSize = 4;
+
+	unsigned int messageSize = reasonCodeSize;
+	char buffer[messageSize];
+	char *bufferP = buffer;
+
+	RWBuffer b;
+	bufferP = b.insertIntToBuffer(static_cast<int>(reasonCode), bufferP);
+
+ 	sendMessage(messageSize, LOC_FAILURE, buffer);
 
  	return 0;
 }

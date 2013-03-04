@@ -12,7 +12,10 @@ OBJECTS3 = client.o helpers.o sender.o receiver.o rpcclient.o constants.o rwbuff
 EXEC3 = client				# 3rd executable name
 
 OBJECTS4 = client1.o helpers.o sender.o receiver.o rpcclient.o constants.o rwbuffer.o
-EXEC4 = client1				# 3rd executable name
+EXEC4 = client1				# 4th executable name
+
+OBJECTS4 = client2.o helpers.o sender.o receiver.o rpcclient.o constants.o rwbuffer.o
+EXEC4 = client2				# 5th executable name
 
 OBJECTS = ${OBJECTS1} ${OBJECTS2} ${OBJECTS3}	${OBJECTS4}			# all object files
 DEPENDS = ${OBJECTS:.o=.d}			# substitute ".o" with ".d"

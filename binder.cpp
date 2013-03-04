@@ -66,6 +66,8 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
         free(argTypes);
     } else {
         cerr << "Registration of given function not found, registering now..." << endl;
+        cerr << "server_identifier = " << location.server_identifier << endl;
+        cerr << "port = " << location.port << endl;
         servicesDictionary[key] = location;
     }
 }
@@ -86,9 +88,13 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
 
     if (servicesDictionary.find(key) != servicesDictionary.end()) {
         cerr << "LOC REQ FOUND!" << endl;
-        // sender.
+        server_info location = servicesDictionary[key];
+        cerr << "server_identifier = " << location.server_identifier << endl;
+        cerr << "port = " << location.port << endl;
+        sender.sendLocSuccessMessage(location.server_identifier, location.port);
     } else {
         cerr << "LOC REQ NOT FOUND!" << endl;
+        sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
     }
 }
 

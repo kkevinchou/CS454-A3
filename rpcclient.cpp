@@ -201,6 +201,7 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
 
     s.sendArray(messageSize + 8, message);
 }
+
 int rpcCall(char* name, int* argTypes, void** args) {
     // cerr << "RPC CALL" << endl;
     sendLocRequest(string(name), argTypes);
