@@ -23,7 +23,7 @@ unsigned int RWBuffer::returnArgTypesLength(int * array)
         int type = *array;
         array++;
         if(type == 0) break;
-        
+
     }
 
     return counter;
@@ -40,7 +40,7 @@ unsigned int RWBuffer::returnArgTypesLength(char * bufferP)
         int type;
         bufferP = extractInt(bufferP, type);
         if(type == 0) break;
-        
+
     }
 
     return counter;
@@ -50,7 +50,7 @@ char * RWBuffer::copyBufferToConvertor(char * bufferP, unsigned int length)
 {
 	if(length > 8) cerr << "WARNING: union DataTypeConvertor may not work correctly."<<endl;
 
-    for(int i = 0; i < length; i++)
+    for(unsigned int i = 0; i < length; i++)
     {
         _convertor.charArray[i] = *bufferP;
         bufferP++;
@@ -60,7 +60,7 @@ char * RWBuffer::copyBufferToConvertor(char * bufferP, unsigned int length)
 // extract arrays
 char * RWBuffer::extractIntArray(char * bufferP, int intArray[], unsigned int length) // make sure enough memory is in intArray
 {
-    for(int i = 0; i < length; i++)
+    for(unsigned int i = 0; i < length; i++)
     {
         int n;
         bufferP = extractInt(bufferP, n);
@@ -70,7 +70,7 @@ char * RWBuffer::extractIntArray(char * bufferP, int intArray[], unsigned int le
 }
 char * RWBuffer::extractShortArray(char * bufferP, short shortArray[], unsigned int length)
 {
-    for(int i = 0; i < length; i++)
+    for(unsigned int i = 0; i < length; i++)
     {
         short n;
         bufferP = extractShort(bufferP, n);
@@ -80,7 +80,7 @@ char * RWBuffer::extractShortArray(char * bufferP, short shortArray[], unsigned 
 }
 char * RWBuffer::extractCharArray(char * bufferP, char charArray[], unsigned int length)
 {
-    for(int i = 0; i < length; i++)
+    for(unsigned int i = 0; i < length; i++)
     {
         char n;
         bufferP = extractChar(bufferP, n);
@@ -90,7 +90,7 @@ char * RWBuffer::extractCharArray(char * bufferP, char charArray[], unsigned int
 }
 char * RWBuffer::extractLongArray(char * bufferP, long longArray[], unsigned int length)
 {
-    for(int i = 0; i < length; i++)
+    for(unsigned int i = 0; i < length; i++)
     {
         long n;
         bufferP = extractLong(bufferP, n);
@@ -100,7 +100,7 @@ char * RWBuffer::extractLongArray(char * bufferP, long longArray[], unsigned int
 }
 char * RWBuffer::extractDoubleArray(char * bufferP, double doubleArray[], unsigned int length)
 {
-    for(int i = 0; i < length; i++)
+    for(unsigned int i = 0; i < length; i++)
     {
         double n;
         bufferP = extractDouble(bufferP, n);
@@ -110,7 +110,7 @@ char * RWBuffer::extractDoubleArray(char * bufferP, double doubleArray[], unsign
 }
 char * RWBuffer::extractFloatArray(char * bufferP, float floatArray[], unsigned int length)
 {
-    for(int i = 0; i < length; i++)
+    for(unsigned int i = 0; i < length; i++)
     {
         float n;
         bufferP = extractFloat(bufferP, n);
@@ -230,7 +230,7 @@ char * RWBuffer::copyConvertorToBuffer(char * bufferP, unsigned int length)
 {
 	for(int index = 0; index < length; index++)
 	{
-		bufferP[index] = _convertor.charArray[index]; 
+		bufferP[index] = _convertor.charArray[index];
 	}
 	return bufferP+length;
 }
@@ -284,7 +284,7 @@ char * RWBuffer::insertShortArrayToBuffer(short shortArray[], int length, char *
 
 	return bufferP;
 }
-char * RWBuffer::insertCharArrayToBuffer(char charArray[], int length, char *bufferP) 
+char * RWBuffer::insertCharArrayToBuffer(char charArray[], int length, char *bufferP)
 {
 	for (int i = 0; i < length; i++) {
 		bufferP = insertCharToBuffer(charArray[i], bufferP);

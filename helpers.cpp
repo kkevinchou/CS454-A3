@@ -199,7 +199,7 @@ int insertClientServerMessageToBuffer(char *messagePointer, const char* name, in
     messagePointer = b.insertCStringToBuffer(name, messagePointer);
     messagePointer = b.insertIntArrayToBuffer(argTypes, argTypesLength, messagePointer);
 
-    for(int i = 0; i < argTypesLength-1; i++)
+    for(unsigned int i = 0; i < argTypesLength-1; i++)
     {
         int argType = argTypes[i];
 
@@ -340,7 +340,7 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
     bufferPointer = b.extractArgTypes(bufferPointer, argTypes);
 
 
-    for(int i = 0; i < argTypesLength-1 /*ignores the last (0) int*/; i++)
+    for(unsigned int i = 0; i < argTypesLength-1 /*ignores the last (0) int*/; i++)
     {
         int argType = argTypes[i];
         unsigned short int length = b.getArrayLengthFromArgumentType(argType);
