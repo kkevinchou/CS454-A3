@@ -198,7 +198,7 @@ char * RWBuffer::extractShort(char * bufferP, short &i)
 char * RWBuffer::extractUnsignedShort(char * bufferP, unsigned short &us)
 {
     bufferP = copyBufferToConvertor(bufferP, sizeof(unsigned short));
-    i = _convertor.s;
+    us = _convertor.us;
     return bufferP;
 }
 
