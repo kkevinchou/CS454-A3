@@ -100,7 +100,7 @@ Sender::Sender(int socketFileDescriptor)
 === PROTOCOL FUNCTIONS
 *****************************************************/
 
-int Sender::sendRegisterMessage(string serverID, short port, string name, int argTypes[])
+int Sender::sendRegisterMessage(string serverID, unsigned short port, string name, int argTypes[])
 {
 	unsigned int serverIdSize = serverID.size() + 1;
 	unsigned int portSize = 2;
@@ -141,7 +141,7 @@ int Sender::sendLocRequestMessage(string name, int argTypes[]) {
  	return 0;
 }
 
-int Sender::sendLocSuccessMessage(string serverID, short port) {
+int Sender::sendLocSuccessMessage(string serverID, unsigned short port) {
 	unsigned int serverIdSize = serverID.size() + 1;
 	unsigned int portSize = 2;
 

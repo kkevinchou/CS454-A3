@@ -153,7 +153,7 @@ int acceptConnection(int localSocketFd) {
     return newSocketFd;
 }
 
-short getPort(int localSocketFd) {
+unsigned short getPort(int localSocketFd) {
     struct sockaddr_in sin;
     socklen_t len = sizeof(sin);
     getsockname(localSocketFd, (struct sockaddr *)&sin, &len);

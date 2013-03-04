@@ -36,7 +36,7 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
 
     char * bufferPointer = buffer;
     bufferPointer = b.extractString(bufferPointer, serverID);
-    bufferPointer = b.extractShort(bufferPointer, port);
+    bufferPointer = b.extractUnsignedShort(bufferPointer, port);
     bufferPointer = b.extractString(bufferPointer, name);
 
     unsigned int serverIDSize = serverID.size() + 1;

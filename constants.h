@@ -41,7 +41,7 @@ struct server_info {
     server_info(string server_identifier, unsigned short port) : server_identifier(server_identifier), port(port) {}
     server_info() {
         server_identifier = "";
-        port = -1;
+        port = 0;
     }
 };
 

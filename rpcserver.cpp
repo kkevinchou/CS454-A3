@@ -39,7 +39,7 @@ int rpcInit() {
     }
 
     localSocketFd = createSocket();
-   
+    listenOnSocket(localSocketFd);
     printSettings(localSocketFd);
 
     if (localSocketFd < 0) {
@@ -70,7 +70,7 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	registeredFunctions[k] = f;
 
 	string hostname = getHostname();
-	short port = getPort(localSocketFd);
+	unsigned short port = getPort(localSocketFd);
 	string funcName = string(name);
 
 	Sender s(binderSocketFd);
@@ -382,7 +382,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 int rpcExecute()
 {
 	if(registeredFunctions.size() == 0) return -1; // no functions to serve
- listenOnSocket(localSocketFd);
     printSettings(localSocketFd);
 
     int max_fd = localSocketFd;
