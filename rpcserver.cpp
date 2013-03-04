@@ -96,7 +96,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		cout << endl;
 		cout << "Received an EXECUTE message of size "<<messageSize<<": "<<endl;
 	}
-	for(int i = 0; i < messageSize; i++)
+	for(unsigned int i = 0; i < messageSize; i++)
 	{
 		cout << (int)message[i]<<" ";
 	}
@@ -120,7 +120,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 	int argTypes[argTypesLength];
 	void * args[argTypesLength];
 
-	int n = extractArgumentsMessage(bufferPointer, argTypes, args, argTypesLength);
+	extractArgumentsMessage(bufferPointer, argTypes, args, argTypesLength);
 
 	// handle request
 	// name, argTypes, args
@@ -155,7 +155,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		    if(debug)
 		    {
 		        cout << "Sending an EXECUTE_SUCCESS message of size "<<messageSize << ": "<<endl;
-		        for(int i = 0; i < messageSize; i++)
+		        for(unsigned int i = 0; i < messageSize; i++)
 		        {
 		            cout << (int)message[i] << " ";
 
@@ -178,6 +178,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		char failureCodeMessage[1];
 		failureCodeMessage[0] = -1;
 		int r = s.sendMessage(4, EXECUTE_FAILURE, failureCodeMessage);
+		if(r != 0) cerr << "WARNING: Send EXECUTE_FAILURE message failed."<<endl;
 	}
 
 }
