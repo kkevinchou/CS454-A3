@@ -31,4 +31,8 @@ string getHostname();
 
 void printSettings(int localSocketFd);
 
+int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[], unsigned int argTypesLength);
+unsigned int getClientServerMessageLength(char* name, int* argTypes, void**args);
+int insertClientServerMessageToBuffer(char *messagePointer, char* name, int* argTypes, void**args);
+
 #endif

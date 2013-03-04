@@ -17,7 +17,7 @@
 #include "helpers.h"
 
 using namespace std;
-
+static bool debug = true;
 static int localSocketFd;
 static int binderSocketFd;
 
@@ -91,7 +91,7 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 
 void handleExecuteMessage(char * message, unsigned int messageSize)
 {
-	bool debug = true;
+	
 	if(debug){
 		cout << endl;
 		cout << "Received an EXECUTE message of size "<<messageSize<<": "<<endl;
@@ -113,205 +113,12 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 	char * bufferPointer = message;
 	bufferPointer = b.extractString(bufferPointer, name);
 	if(debug)cout << "Name: "<<name<<endl;
+	
 
 	unsigned int argTypesLength = b.returnArgTypesLength(bufferPointer);
-
 	int argTypes[argTypesLength];
-	bufferPointer = b.extractArgTypes(bufferPointer, argTypes);
-
 	void * args[argTypesLength];
-
-	for(int i = 0; i < argTypesLength; i++)
-	{
-		int argType = argTypes[i];
-		unsigned short int length = b.getArrayLengthFromArgumentType(argType);
-		int type = b.getTypeFromArgumentType(argType);
-
-		switch(type)
-		{
-			case ARG_CHAR:
-			{
-				if(length == 0)
-				{
-
-					char * c = new char();
-					bufferPointer = b.extractChar(bufferPointer, *c);
-
-					args[i] = (void *)c;
-
-					if(debug) cout <<" "<<i<< ": "<< "Char "<< *c<<endl;
-				}
-				else
-				{
-					char * cArray = new char[length];
-					bufferPointer = b.extractCharArray(bufferPointer, cArray, length);
-					args[i] = (void *)cArray;
-
-					if(debug){
-
-						cout <<" "<<i<< ": "<< "Chars ";
-						for(int j = 0; j < length; j++)
-						{
-							cout << cArray[j] << " ";
-						}
-						cout << endl;
-					}
-				}
-
-			}
-			break;
-			case ARG_SHORT:
-			{
-				if(length == 0)
-				{
-					short * s = new short();
-					bufferPointer = b.extractShort(bufferPointer, *s);
-
-					args[i] = (void *)s;
-
-					if(debug) cout <<" "<<i<< ": "<< "Short "<< *s<<endl;
-				}
-				else
-				{
-					short * sArray = new short[length];
-					bufferPointer = b.extractShortArray(bufferPointer, sArray, length);
-					args[i] = (void *)sArray;
-
-					if(debug){
-
-						cout <<" "<<i<< ": "<< "Shorts ";
-						for(int j = 0; j < length; j++)
-						{
-							cout << sArray[j] << " ";
-						}
-						cout << endl;
-					}
-				}
-			}
-			break;
-			case ARG_INT:
-			{
-				if(length == 0)
-				{
-					int * c = new int();
-					bufferPointer = b.extractInt(bufferPointer, *c);
-
-					args[i] = (void *)c;
-
-					if(debug) cout <<" "<<i<< ": "<< "Int "<< *c<<endl;
-				}
-				else
-				{
-					int * cs = new int[length];
-					bufferPointer = b.extractIntArray(bufferPointer, cs, length);
-					args[i] = (void *)cs;
-
-					if(debug){
-
-						cout <<" "<<i<< ": "<< "Ints ";
-						for(int j = 0; j < length; j++)
-						{
-							cout << cs[j] << " ";
-						}
-						cout << endl;
-					}
-				}
-
-			}
-			break;
-			case ARG_LONG:
-			{
-				if(length == 0)
-				{
-					long * l = new long();
-					bufferPointer = b.extractLong(bufferPointer, *l);
-
-					args[i] = (void *)l;
-
-					if(debug) cout <<" "<<i<< ": "<< "Long "<< *l<<endl;
-
-
-				}
-				else
-				{
-					long * lArray = new long[length];
-					bufferPointer = b.extractLongArray(bufferPointer, lArray, length);
-					args[i] = (void *)lArray;
-
-					if(debug){
-
-						cout <<" "<<i<< ": "<< "Longs ";
-						for(int j = 0; j < length; j++)
-						{
-							cout << lArray[j] << " ";
-						}
-						cout << endl;
-					}
-				}
-			}
-			break;
-			case ARG_DOUBLE:
-			{
-				if(length == 0)
-				{
-					double * d = new double();
-					bufferPointer = b.extractDouble(bufferPointer, *d);
-
-					args[i] = (void *)d;
-
-					if(debug) cout <<" "<<i<< ": "<< "Double "<< *d<<endl;
-				}
-				else
-				{
-					double * dArray = new double[length];
-					bufferPointer = b.extractDoubleArray(bufferPointer, dArray, length);
-					args[i] = (void *)dArray;
-
-					if(debug){
-
-						cout <<" "<<i<< ": "<< "Doubles ";
-						for(int j = 0; j < length; j++)
-						{
-							cout << dArray[j] << " ";
-						}
-						cout << endl;
-					}
-				}
-			}
-			break;
-			case ARG_FLOAT:
-			{
-				if(length == 0)
-				{
-					float * f = new float();
-					bufferPointer = b.extractFloat(bufferPointer, *f);
-
-					args[i] = (void *)f;
-
-					if(debug) cout <<" "<<i<< ": "<< "Float "<< *f<<endl;
-				}
-				else
-				{
-					float * fArray = new float[length];
-					bufferPointer = b.extractFloatArray(bufferPointer, fArray, length);
-					args[i] = (void *)fArray;
-
-					if(debug){
-
-						cout <<" "<<i<< ": "<< "Floats ";
-						for(int j = 0; j < length; j++)
-						{
-							cout << fArray[j] << " ";
-						}
-						cout << endl;
-					}
-				}
-			}
-			break;
-			default:
-			break;
-		}
-	}
+	int n = extractArgumentsMessage(bufferPointer, argTypes, args, argTypesLength);
 
 	// handle request
 	// name, argTypes, args
@@ -320,7 +127,7 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 
 	int failCode = 0;
 
-	if(s == NULL){
+	if(s == NULL){ 
 		// error, function not found. send fail message
 		failCode = -1;
 	}

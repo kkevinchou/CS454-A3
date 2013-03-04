@@ -13,8 +13,9 @@
 #include <netdb.h>
 #include "constants.h"
 #include "rpc.h"
+#include "rwbuffer.h"
 using namespace std;
-
+static bool debug = true;
 unsigned int sizeOfType(int type)
 {
     switch(type)
@@ -176,4 +177,355 @@ void printSettings(int localSocketFd) {
     socklen_t len = sizeof(sin);
     getsockname(localSocketFd, (struct sockaddr *)&sin, &len);
     cout << "BINDER_PORT " << ntohs(sin.sin_port) << endl;
+}
+
+
+// Client Server helpers
+
+
+
+
+
+
+int insertClientServerMessageToBuffer(char *messagePointer, char* name, int* argTypes, void**args)
+{
+    RWBuffer b;
+    unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
+
+    messagePointer = b.insertCStringToBuffer(name, messagePointer);
+    messagePointer = b.insertIntArrayToBuffer(argTypes, argTypesLength, messagePointer);
+
+    for(int i = 0; i < argTypesLength-1; i++)
+    {
+        int argType = argTypes[i];
+
+        unsigned short length = b.getArrayLengthFromArgumentType(argType);
+        if(length == 0) length= 1; // treat scalars and arrays of length 1 the same
+
+        int type = b.getTypeFromArgumentType(argType);
+
+        void * arg = args[i];
+
+        switch(type)
+        {
+            case ARG_CHAR:
+            {
+                char * chars = (char *)arg;
+                if(debug) cout << " "<< i<<": Char ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << chars[j]<< " ";
+                    messagePointer = b.insertCharToBuffer(chars[j], messagePointer);
+                }
+
+                if(debug) cout << endl;
+            }
+
+            break;
+            case ARG_SHORT:
+            {
+                short * shorts = (short *)arg;
+                if(debug) cout << " "<< i<<": Short ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << shorts[j] << " ";
+                    messagePointer = b.insertShortToBuffer(shorts[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
+            break;
+            break;
+            case ARG_INT:
+            {
+                int * ints = (int *)arg;
+                if(debug) cout << " "<< i<<": Int ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << ints[j] << " ";
+                    messagePointer = b.insertIntToBuffer(ints[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
+            break;
+            case ARG_LONG:
+            {
+                long * longs = (long *)arg;
+                if(debug) cout << " "<< i<<": Long ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << longs[j] << " ";
+                    messagePointer = b.insertLongToBuffer(longs[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
+            break;
+            case ARG_DOUBLE:
+            {
+                double * doubles = (double *)arg;
+                if(debug) cout << " "<< i<<": Double ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << doubles[j] << " ";
+                    messagePointer = b.insertDoubleToBuffer(doubles[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
+            break;
+            case ARG_FLOAT:
+            {
+                float * floats = (float *)arg;
+                if(debug) cout << " "<< i<<": Float ";
+                for(int j = 0; j < length; j++)
+                {
+                    if(debug) cout << floats[j] << " ";
+                    messagePointer = b.insertFloatToBuffer(floats[j], messagePointer);
+                }
+                if(debug) cout << endl;
+            }
+            break;
+            break;
+            default:
+                cerr << "WARNING: argument of unknown type."<<endl;
+            break;
+        }
+    }
+    return 0;
+}
+unsigned int getClientServerMessageLength(char* name, int* argTypes, void**args)
+{
+    unsigned int argTypesLength = 0;
+    unsigned int messageSize = 0;
+
+    // calculate length of arguments
+    int * argTypesP = argTypes;
+    RWBuffer b;
+    while(*argTypesP != 0)
+    {
+        int argType = *argTypesP;
+
+        unsigned short length = b.getArrayLengthFromArgumentType(argType);
+        if(length == 0) length = 1; // if it's a scalar, it still takes up one room
+
+        int type = b.getTypeFromArgumentType(argType);
+        unsigned int size = sizeOfType(type);
+        messageSize += length*size;
+
+        argTypesP++;
+        argTypesLength++;
+    }
+    argTypesLength++; //accout for the 0
+
+    // calculate length of argTypes
+    messageSize += 4*argTypesLength;
+
+    // calculate name size
+    char * nameP = name;
+    while(*nameP != '\0')
+    {
+        messageSize++;
+        nameP++;
+    }
+    messageSize++; //accountfor null termination char
+
+    return messageSize;
+}
+
+int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[], unsigned int argTypesLength)
+{
+    RWBuffer b;
+    bufferPointer = b.extractArgTypes(bufferPointer, argTypes);
+
+
+    for(int i = 0; i < argTypesLength; i++)
+    {
+        int argType = argTypes[i];
+        unsigned short int length = b.getArrayLengthFromArgumentType(argType);
+        int type = b.getTypeFromArgumentType(argType);
+
+        switch(type)
+        {
+            case ARG_CHAR:
+            {
+                if(length == 0)
+                {
+
+                    char * c = new char();
+                    bufferPointer = b.extractChar(bufferPointer, *c);
+
+                    args[i] = (void *)c;
+
+                    if(debug) cout <<" "<<i<< ": "<< "Char "<< *c<<endl;
+                }
+                else
+                {
+                    char * cArray = new char[length];
+                    bufferPointer = b.extractCharArray(bufferPointer, cArray, length);
+                    args[i] = (void *)cArray;
+
+                    if(debug){
+
+                        cout <<" "<<i<< ": "<< "Chars ";
+                        for(int j = 0; j < length; j++)
+                        {
+                            cout << cArray[j] << " ";
+                        }
+                        cout << endl;
+                    }
+                }
+
+            }
+            break;
+            case ARG_SHORT:
+            {
+                if(length == 0)
+                {
+                    short * s = new short();
+                    bufferPointer = b.extractShort(bufferPointer, *s);
+
+                    args[i] = (void *)s;
+
+                    if(debug) cout <<" "<<i<< ": "<< "Short "<< *s<<endl;
+                }
+                else
+                {
+                    short * sArray = new short[length];
+                    bufferPointer = b.extractShortArray(bufferPointer, sArray, length);
+                    args[i] = (void *)sArray;
+
+                    if(debug){
+
+                        cout <<" "<<i<< ": "<< "Shorts ";
+                        for(int j = 0; j < length; j++)
+                        {
+                            cout << sArray[j] << " ";
+                        }
+                        cout << endl;
+                    }
+                }
+            }
+            break;
+            case ARG_INT:
+            {
+                if(length == 0)
+                {
+                    int * c = new int();
+                    bufferPointer = b.extractInt(bufferPointer, *c);
+
+                    args[i] = (void *)c;
+
+                    if(debug) cout <<" "<<i<< ": "<< "Int "<< *c<<endl;
+                }
+                else
+                {
+                    int * cs = new int[length];
+                    bufferPointer = b.extractIntArray(bufferPointer, cs, length);
+                    args[i] = (void *)cs;
+
+                    if(debug){
+
+                        cout <<" "<<i<< ": "<< "Ints ";
+                        for(int j = 0; j < length; j++)
+                        {
+                            cout << cs[j] << " ";
+                        }
+                        cout << endl;
+                    }
+                }
+
+            }
+            break;
+            case ARG_LONG:
+            {
+                if(length == 0)
+                {
+                    long * l = new long();
+                    bufferPointer = b.extractLong(bufferPointer, *l);
+
+                    args[i] = (void *)l;
+
+                    if(debug) cout <<" "<<i<< ": "<< "Long "<< *l<<endl;
+
+
+                }
+                else
+                {
+                    long * lArray = new long[length];
+                    bufferPointer = b.extractLongArray(bufferPointer, lArray, length);
+                    args[i] = (void *)lArray;
+
+                    if(debug){
+
+                        cout <<" "<<i<< ": "<< "Longs ";
+                        for(int j = 0; j < length; j++)
+                        {
+                            cout << lArray[j] << " ";
+                        }
+                        cout << endl;
+                    }
+                }
+            }
+            break;
+            case ARG_DOUBLE:
+            {
+                if(length == 0)
+                {
+                    double * d = new double();
+                    bufferPointer = b.extractDouble(bufferPointer, *d);
+
+                    args[i] = (void *)d;
+
+                    if(debug) cout <<" "<<i<< ": "<< "Double "<< *d<<endl;
+                }
+                else
+                {
+                    double * dArray = new double[length];
+                    bufferPointer = b.extractDoubleArray(bufferPointer, dArray, length);
+                    args[i] = (void *)dArray;
+
+                    if(debug){
+
+                        cout <<" "<<i<< ": "<< "Doubles ";
+                        for(int j = 0; j < length; j++)
+                        {
+                            cout << dArray[j] << " ";
+                        }
+                        cout << endl;
+                    }
+                }
+            }
+            break;
+            case ARG_FLOAT:
+            {
+                if(length == 0)
+                {
+                    float * f = new float();
+                    bufferPointer = b.extractFloat(bufferPointer, *f);
+
+                    args[i] = (void *)f;
+
+                    if(debug) cout <<" "<<i<< ": "<< "Float "<< *f<<endl;
+                }
+                else
+                {
+                    float * fArray = new float[length];
+                    bufferPointer = b.extractFloatArray(bufferPointer, fArray, length);
+                    args[i] = (void *)fArray;
+
+                    if(debug){
+
+                        cout <<" "<<i<< ": "<< "Floats ";
+                        for(int j = 0; j < length; j++)
+                        {
+                            cout << fArray[j] << " ";
+                        }
+                        cout << endl;
+                    }
+                }
+            }
+            break;
+            default:
+            break;
+        }
+    }
+    return 0;
 }
