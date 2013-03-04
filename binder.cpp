@@ -30,7 +30,7 @@ extern bool debug;
 
 void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
     string serverID;
-    short port;
+    unsigned short port;
     string name;
     RWBuffer b;
 

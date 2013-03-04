@@ -19,9 +19,9 @@ class Sender
         int getSocketFD();
 
         // Protocol Functions
-        int sendRegisterMessage(string serverID, short port, string name, int argTypes[]);
+        int sendRegisterMessage(string serverID, unsigned short port, string name, int argTypes[]);
         int sendLocRequestMessage(string name, int argTypes[]);
-        int sendLocSuccessMessage(string serverID, short port);
+        int sendLocSuccessMessage(string serverID, unsigned short port);
         int sendLocFailureMessage(ReasonCode reasonCode);
 };
 
