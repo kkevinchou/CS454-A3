@@ -70,9 +70,60 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
         }
         cout << endl;
     }
-    int r = s.sendMessage(messageSize, EXECUTE, message);
 
-    return r;
+    // send remote procedure call
+    int sendResult = s.sendMessage(messageSize, EXECUTE, message);
+    if(sendResult != 0) return sendResult;
+    if(debug) cout << " ...Listening for reply..."<<endl;
+    // listen for a reply
+    Receiver r(binderSocketFd);
+    r.receiveMessageSize(messageSize);
+
+    MessageType type = r.receiveMessageType();
+    if(debug)cout << "Received "<< messageSize << " "<<type<<endl;
+
+    char replyMessage[messageSize];
+    r.receiveMessageGivenSize(messageSize, replyMessage);
+
+
+    int returnCode = 0;
+    switch(type)
+    {
+        case EXECUTE_SUCCESS:
+        {
+            // extract argument data 
+            if(debug)cout << "Success!"<<endl;
+            char * replyMessageP = replyMessage;
+            unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
+            string functionName;
+            replyMessageP = b.extractString(replyMessageP, functionName);
+            if(strcmp(functionName.c_str(), name) == 0)
+            {
+                extractArgumentsMessage(replyMessageP, argTypes, args, argTypesLength);
+            }
+            else
+            {
+                returnCode = -5;
+                cerr << "WARNING: wrong function name returned"<<endl;
+            }
+
+            
+        }
+        break;
+        case EXECUTE_FAILURE:
+        {
+            // extract error code
+            if(debug)cout << "Failure"<<endl;
+            b.extractInt(replyMessage, returnCode);
+        }
+        break;
+        default:
+            cerr << "WARNING: Server returned an invalid response to remote prodcure call."<<endl;
+            returnCode = -10;
+        break;
+    }
+
+    return returnCode;
 }
 
 int processLocResponse(string &serverID, unsigned short &port) {

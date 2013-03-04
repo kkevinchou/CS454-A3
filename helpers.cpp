@@ -187,7 +187,7 @@ void printSettings(int localSocketFd) {
 
 
 
-int insertClientServerMessageToBuffer(char *messagePointer, char* name, int* argTypes, void**args)
+int insertClientServerMessageToBuffer(char *messagePointer, const char* name, int* argTypes, void**args)
 {
     RWBuffer b;
     unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
@@ -291,7 +291,7 @@ int insertClientServerMessageToBuffer(char *messagePointer, char* name, int* arg
     }
     return 0;
 }
-unsigned int getClientServerMessageLength(char* name, int* argTypes, void**args)
+unsigned int getClientServerMessageLength(const char* name, int* argTypes, void**args)
 {
     unsigned int argTypesLength = 0;
     unsigned int messageSize = 0;
@@ -319,7 +319,7 @@ unsigned int getClientServerMessageLength(char* name, int* argTypes, void**args)
     messageSize += 4*argTypesLength;
 
     // calculate name size
-    char * nameP = name;
+    const char * nameP = name;
     while(*nameP != '\0')
     {
         messageSize++;
@@ -336,7 +336,7 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
     bufferPointer = b.extractArgTypes(bufferPointer, argTypes);
 
 
-    for(int i = 0; i < argTypesLength; i++)
+    for(int i = 0; i < argTypesLength-1 /*ignores the last (0) int*/; i++)
     {
         int argType = argTypes[i];
         unsigned short int length = b.getArrayLengthFromArgumentType(argType);
@@ -524,8 +524,10 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
             }
             break;
             default:
+            if(debug) cout << "WARNING: Argument has unknown type"<<endl;
             break;
         }
     }
+    cout << "DONE";
     return 0;
 }

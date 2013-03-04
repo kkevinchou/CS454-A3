@@ -203,7 +203,7 @@ char * RWBuffer::extractUnsignedShort(char * bufferP, unsigned short &us)
 }
 
 // insertion methods
-char *RWBuffer::insertCStringToBuffer(char * c, char *bufferP )
+char *RWBuffer::insertCStringToBuffer(const char * c, char *bufferP )
 {
 	while(*c != '\0')
 	{
