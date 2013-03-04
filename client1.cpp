@@ -102,67 +102,67 @@ int main() {
   /* rpcCalls */
   int s0 = rpcCall("f0", argTypes0, args0);
   /* test the return f0 */
-  //printf("\nEXPECTED return of f0 is: %d\n", a0 + b0);
-  //if (s0 >= 0) {
-  //  printf("ACTUAL return of f0 is: %d\n", *((int *)(args0[0])));
- // }
- // else {
-  //  printf("Error: %d\n", s0);
-  //}
+  printf("\nEXPECTED return of f0 is: %d\n", a0 + b0);
+  if (s0 >= 0) {
+   printf("ACTUAL return of f0 is: %d\n", *((int *)(args0[0])));
+ }
+ else {
+   printf("Error: %d\n", s0);
+  }
 
 
    int s1 = rpcCall("f1", argTypes1, args1);
-  // /* test the return of f1 */
-  // printf("\nEXPECTED return of f1 is: %ld\n", a1 + b1 * c1 - d1);
-  // if (s1 >= 0) {
-  //   printf("ACTUAL return of f1 is: %ld\n", *((long *)(args1[0])));
-  // }
-  // else {
-  //   printf("Error: %d\n", s1);
-  // }
+  /* test the return of f1 */
+  printf("\nEXPECTED return of f1 is: %ld\n", a1 + b1 * c1 - d1);
+  if (s1 >= 0) {
+    printf("ACTUAL return of f1 is: %ld\n", *((long *)(args1[0])));
+  }
+  else {
+    printf("Error: %d\n", s1);
+  }
 
 
   int s2 = rpcCall("f2", argTypes2, args2);
-  // /* test the return of f2 */
-  // printf("\nEXPECTED return of f2 is: 31234\n");
-  // if (s2 >= 0) {
-  //   printf("ACTUAL return of f2 is: %s\n", (char *)args2[0]);
-  // }
-  // else {
-  //   printf("Error: %d\n", s2);
-  // }
+  /* test the return of f2 */
+  printf("\nEXPECTED return of f2 is: 31234\n");
+  if (s2 >= 0) {
+    printf("ACTUAL return of f2 is: %s\n", (char *)args2[0]);
+  }
+  else {
+    printf("Error: %d\n", s2);
+  }
 
 
    int s3 = rpcCall("f3", argTypes3, args3);
-  //  test the return of f3
-  // printf(
-  //   "\nEXPECTED return of f3 is: 110 109 108 107 106 105 104 103 102 101 11\n"
-  // );
+  /* test the return of f3 */
+  printf(
+    "\nEXPECTED return of f3 is: 110 109 108 107 106 105 104 103 102 101 11\n"
+  );
 
-  // if (s3 >= 0) {
-  //   printf("ACTUAL return of f3 is: ");
-  //   int i;
-  //   for (i = 0; i < 11; i++) {
-  //     printf(" %ld", *(((long *)args3[0]) + i));
-  //   }
-  //   printf("\n");
-  // }
-  // else {
-  //   printf("Error: %d\n", s3);
-  // }
+  if (s3 >= 0) {
+    printf("ACTUAL return of f3 is: ");
+    int i;
+    for (i = 0; i < 11; i++) {
+      printf(" %ld", *(((long *)args3[0]) + i));
+    }
+    printf("\n");
+  }
+  else {
+    printf("Error: %d\n", s3);
+  }
 
    int s4 = rpcCall("f4", argTypes4, args4);
-  // /* test the return of f4 */
-  // printf("\ncalling f4 to print an non existed file on the server");
-  // printf("\nEXPECTED return of f4: some integer other than 0");
-  // printf("\nACTUAL return of f4: %d\n", s4);
+   /* test the return of f4 */
+   printf("\ncalling f4 to print an non existed file on the server");
+   printf("\nEXPECTED return of f4: some integer other than 0");
+   printf("\nACTUAL return of f4: %d\n", s4);
 
-  // /* rpcTerminate */
-  // printf("\ndo you want to terminate? y/n: ");
-  // if (getchar() == 'y')
-  //   rpcTerminate();
+  /* rpcTerminate */
+  printf("\ndo you want to terminate? y/n: ");
+  if (getchar() == 'y')
+    rpcTerminate();
 
-  // /* end of client.c */
+  /* end of client.c */
   return 0;
 }
 

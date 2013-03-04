@@ -13,7 +13,6 @@
 using namespace std;
 
 static bool debug = true;
-static int localSocketFd;
 static int binderSocketFd;
 
 int sendLocRequest(string name, int argTypes[]) {
@@ -63,7 +62,7 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
     if(debug)
     {
         cout << "Sending an EXECUTE message of size "<<messageSize << ": "<<endl;
-        for(int i = 0; i < messageSize; i++)
+        for(unsigned int i = 0; i < messageSize; i++)
         {
             cout << (int)message[i] << " ";
 
@@ -131,13 +130,15 @@ int processLocResponse(string &serverID, unsigned short &port) {
 
     unsigned int messageSize;
 
-    r.receiveMessageSize(messageSize);
+    int n =r.receiveMessageSize(messageSize);
+    if(n < 0) return n;
+
     MessageType msgType = r.receiveMessageType();
 
     char buffer[messageSize];
     char *bufferPointer = buffer;
-    r.receiveMessageGivenSize(messageSize, buffer);
-
+    n = r.receiveMessageGivenSize(messageSize, buffer);
+    if(n<0) return n;
     RWBuffer b;
 
     if (msgType == LOC_SUCCESS) {
@@ -175,5 +176,11 @@ int rpcCall(char* name, int* argTypes, void** args) {
     int n = sendExecuteRequest(serverSocketFd,name, argTypes, args);
 
     close(serverSocketFd);
+    return n;
+}
+int rpcTerminate()
+{
+    // TODO: send terminate message
+
     return 0;
 }
