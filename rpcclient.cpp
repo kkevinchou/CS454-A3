@@ -12,6 +12,7 @@
 #include "rwbuffer.h"
 using namespace std;
 
+static bool debug = true;
 static int localSocketFd;
 static int binderSocketFd;
 
@@ -34,80 +35,22 @@ int sendLocRequest(string name, int argTypes[]) {
     return s.sendLocRequestMessage(name, argTypes);
 }
 
-unsigned int getClientServerMessageLength(char* name, int* argTypes, void**args)
-{
-    unsigned int argTypesLength = 0;
-    unsigned int messageSize = 0;
-
-    // calculate length of arguments
-    int * argTypesP = argTypes;
-    RWBuffer b;
-    while(*argTypesP != 0)
-    {
-        int argType = *argTypesP;
-
-        unsigned short length = b.getArrayLengthFromArgumentType(argType);
-        if(length == 0) length = 1; // if it's a scalar, it still takes up one room
-
-        int type = b.getTypeFromArgumentType(argType);
-        unsigned int size = sizeOfType(type);
-        messageSize += length*size;
-
-        argTypesP++;
-        argTypesLength++;
-    }
-    argTypesLength++; //accout for the 0
-
-    // calculate length of argTypes
-    messageSize += 4*argTypesLength;
-
-    // calculate name size
-    char * nameP = name;
-    while(*nameP != '\0')
-    {
-        messageSize++;
-        nameP++;
-    }
-    messageSize++; //accountfor null termination char
-
-    return messageSize;
-}
-
-int sendExecuteRequest(char* name, int* argTypes, void**args)
+int insertClientServerMessageToBuffer(char *messagePointer, char* name, int* argTypes, void**args)
 {
     RWBuffer b;
-    Sender s(binderSocketFd);
     unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
-    unsigned int messageSize = getClientServerMessageLength(name, argTypes, args);
 
-    bool debug = true;
-
-    if(debug)
-    {
-        cout << endl;
-        cout << "Name: " << name<<endl;
-    }
-    // create buffer for full message
-    char message[messageSize + 8];
-
-    char * messagePointer = message;
-    messagePointer = b.insertUnsignedIntToBuffer(messageSize, messagePointer);
-    messagePointer = b.insertIntToBuffer(static_cast<int>(EXECUTE), messagePointer);
     messagePointer = b.insertCStringToBuffer(name, messagePointer);
-
     messagePointer = b.insertIntArrayToBuffer(argTypes, argTypesLength, messagePointer);
+
     for(int i = 0; i < argTypesLength-1; i++)
     {
-         int argType = argTypes[i];
+        int argType = argTypes[i];
 
         unsigned short length = b.getArrayLengthFromArgumentType(argType);
-        if(length == 0) length= 1;
-        int type = b.getTypeFromArgumentType(argType);/*
-        char *addShortToBuffer(short s, char *bufferP);
-        char *addIntToBuffer(int i, char *bufferP);
-        char *addStringToBuffer(string s, char *bufferP);
-        char *addIntBufferToBuffer(int intBuf[], int numInts, char *bufferP);
-        char *addUnsignedIntToBuffer(unsigned int u, char *bufferP);*/
+        if(length == 0) length= 1; // treat scalars and arrays of length 1 the same
+
+        int type = b.getTypeFromArgumentType(argType);
 
         void * arg = args[i];
 
@@ -194,6 +137,70 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
             break;
         }
     }
+    return 0;
+}
+unsigned int getClientServerMessageLength(char* name, int* argTypes, void**args)
+{
+    unsigned int argTypesLength = 0;
+    unsigned int messageSize = 0;
+
+    // calculate length of arguments
+    int * argTypesP = argTypes;
+    RWBuffer b;
+    while(*argTypesP != 0)
+    {
+        int argType = *argTypesP;
+
+        unsigned short length = b.getArrayLengthFromArgumentType(argType);
+        if(length == 0) length = 1; // if it's a scalar, it still takes up one room
+
+        int type = b.getTypeFromArgumentType(argType);
+        unsigned int size = sizeOfType(type);
+        messageSize += length*size;
+
+        argTypesP++;
+        argTypesLength++;
+    }
+    argTypesLength++; //accout for the 0
+
+    // calculate length of argTypes
+    messageSize += 4*argTypesLength;
+
+    // calculate name size
+    char * nameP = name;
+    while(*nameP != '\0')
+    {
+        messageSize++;
+        nameP++;
+    }
+    messageSize++; //accountfor null termination char
+
+    return messageSize;
+}
+
+int sendExecuteRequest(char* name, int* argTypes, void**args)
+{
+    RWBuffer b;
+    Sender s(binderSocketFd);
+    
+    unsigned int messageSize = getClientServerMessageLength(name, argTypes, args);
+
+
+
+    if(debug)
+    {
+        cout << endl;
+        cout << "Name: " << name<<endl;
+    }
+    // create buffer for full message
+    char message[messageSize + 8];
+
+    char * messagePointer = message;
+    messagePointer = b.insertUnsignedIntToBuffer(messageSize, messagePointer);
+    messagePointer = b.insertIntToBuffer(static_cast<int>(EXECUTE), messagePointer);
+   
+   int n = insertClientServerMessageToBuffer(messagePointer, name, argTypes, args);
+   if(n != 0) cout << "xecute msg error"<<endl;
     if(debug)
     {
         cout << "Sending an EXECUTE message of size "<<messageSize << ": "<<endl;
@@ -210,11 +217,11 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
 
 int rpcCall(char* name, int* argTypes, void** args) {
     // cerr << "RPC CALL" << endl;
-    sendLocRequest(string(name), argTypes);
+   // sendLocRequest(string(name), argTypes);
     // char * binderAddressString = getenv ("BINDER_ADDRESS");
     // char * binderPortString = getenv("BINDER_PORT");
     // binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
-    // cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
+     cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
     return 0;
 }
