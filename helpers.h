@@ -26,7 +26,7 @@ unsigned int sizeOfType(int type);
 void listenOnSocket(int localSocketFd);
 int acceptConnection(int localSocketFd);
 MessageType getMessageTypeFromInt(int i);
-short getPort(int localSocketFd);
+unsigned short getPort(int localSocketFd);
 string getHostname();
 
 void printSettings(int localSocketFd);
