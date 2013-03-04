@@ -228,7 +228,7 @@ char * RWBuffer::insertStringToBuffer(string s, char *bufferP)
 
 char * RWBuffer::copyConvertorToBuffer(char * bufferP, unsigned int length)
 {
-	for(int index = 0; index < length; index++)
+	for(unsigned int index = 0; index < length; index++)
 	{
 		bufferP[index] = _convertor.charArray[index];
 	}
