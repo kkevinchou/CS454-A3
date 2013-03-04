@@ -129,8 +129,17 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
         {
             chunkInfo[clientSocketFd] = messageSize;
 
-            MessageType msgType = receiver.receiveMessageType();
-            msgInfo[clientSocketFd] = msgType;
+            MessageType msgType;
+
+            if(receiver.receiveMessageType(msgType) == 0)
+            {
+                msgInfo[clientSocketFd] = msgType;
+            }
+            else
+            {
+                closed = true;
+            }
+            
         }
         else
         {

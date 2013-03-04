@@ -21,20 +21,21 @@ Receiver::Receiver(int socketFileDescriptor)
 	_sfd = socketFileDescriptor;
 }
 
-MessageType Receiver::receiveMessageType()
+int Receiver::receiveMessageType(MessageType &m)
 {
     char buffer[4];
-
-    if(receiveMessageGivenSize(4, buffer) == 0)
+    int n = receiveMessageGivenSize(4, buffer);
+    if(n == 0)
     {
         //cout << buffer[3]<<endl;
         RWBuffer b;
         int r;
         b.extractInt(buffer, r);
 
-        return getMessageTypeFromInt(r);
+        m = getMessageTypeFromInt(r);
+        return 0;
     }
-    else return ERROR;
+    else return n;
 }
 
 // returns negative for error

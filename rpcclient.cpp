@@ -76,14 +76,16 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
     if(debug) cout << " ...Listening for reply..."<<endl;
     // listen for a reply
     Receiver r(serverSocketFd);
-    r.receiveMessageSize(messageSize);
-
-    MessageType type = r.receiveMessageType();
+    int n = r.receiveMessageSize(messageSize);
+    if(n < 0) return n;
+    MessageType type; 
+    n = r.receiveMessageType(type);
+    if(n < 0) return n;
     if(debug)cout << "Received "<< messageSize << " "<<type<<endl;
 
     char replyMessage[messageSize];
-    r.receiveMessageGivenSize(messageSize, replyMessage);
-
+    n = r.receiveMessageGivenSize(messageSize, replyMessage);
+    if(n < 0) return n;
 
     int returnCode = 0;
     switch(type)
@@ -130,11 +132,13 @@ int processLocResponse(string &serverID, unsigned short &port) {
 
     unsigned int messageSize;
 
-    int n =r.receiveMessageSize(messageSize);
+    int n = r.receiveMessageSize(messageSize);
     if(n < 0) return n;
 
-    MessageType msgType = r.receiveMessageType();
-
+    MessageType msgType;
+    n = r.receiveMessageType(msgType);
+    if(n < 0) return n;
+    
     char buffer[messageSize];
     char *bufferPointer = buffer;
     n = r.receiveMessageGivenSize(messageSize, buffer);

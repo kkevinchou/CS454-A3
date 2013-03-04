@@ -194,23 +194,27 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
     if(receiver.receiveMessageSize(messageSize) == 0 )
     {
         // TODO : HANDLE TERMINATE
-        MessageType type = receiver.receiveMessageType();
-
-        if (type == EXECUTE) {
-           // cout << "Received execute message"<<endl;
-
-
-	        char buffer[messageSize];
-	        if (receiver.receiveMessageGivenSize(messageSize, buffer) == 0)
-	        {
-
-	        	// TODO: handle in another thread in the future
-	           	handleExecuteMessage(clientSocketFd,buffer, messageSize);
+        MessageType type;
+        if(receiver.receiveMessageType(type) == 0)
+        {
+        	 if (type == EXECUTE) {
+	           // cout << "Received execute message"<<endl;
 
 
-	            success = true;
-	        }
-	    }
+		        char buffer[messageSize];
+		        if (receiver.receiveMessageGivenSize(messageSize, buffer) == 0)
+		        {
+
+		        	// TODO: handle in another thread in the future
+		           	handleExecuteMessage(clientSocketFd,buffer, messageSize);
+
+
+		            success = true;
+		        }
+		    }
+        }
+
+       
 
     }
 
