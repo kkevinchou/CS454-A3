@@ -213,15 +213,17 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
     }
 
     s.sendArray(messageSize + 8, message);
+
+    return 0;
 }
 
 int rpcCall(char* name, int* argTypes, void** args) {
     // cerr << "RPC CALL" << endl;
-   // sendLocRequest(string(name), argTypes);
-    // char * binderAddressString = getenv ("BINDER_ADDRESS");
+    sendLocRequest(string(name), argTypes);
+   //  char * binderAddressString = getenv ("BINDER_ADDRESS");
     // char * binderPortString = getenv("BINDER_PORT");
-    // binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
+     //binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
-     cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
+     //cout << "SENDING EXECUTE "<<sendExecuteRequest(name, argTypes, args)<<endl;
     return 0;
 }

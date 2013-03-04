@@ -13,6 +13,7 @@ union DataTypeConversion
     float f;
     long l;
     short s;
+    unsigned short us;
     char charArray[8];
 };
 

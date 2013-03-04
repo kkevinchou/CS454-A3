@@ -195,6 +195,13 @@ char * RWBuffer::extractShort(char * bufferP, short &i)
     return bufferP;
 }
 
+char * RWBuffer::extractUnsignedShort(char * bufferP, unsigned short &us)
+{
+    bufferP = copyBufferToConvertor(bufferP, sizeof(unsigned short));
+    i = _convertor.s;
+    return bufferP;
+}
+
 // insertion methods
 char *RWBuffer::insertCStringToBuffer(char * c, char *bufferP )
 {
@@ -310,5 +317,10 @@ char *RWBuffer::insertDoubleToBuffer(double d, char *bufferP) {
 char *RWBuffer::insertLongToBuffer(long l, char *bufferP) {
 	_convertor.l = l;
 	return copyConvertorToBuffer(bufferP, sizeof(long));
+}
+char *RWBuffer::insertUnsignedShortToBuffer(unsigned short us, char *bufferP)
+{
+    _convertor.us = us;
+    return copyConvertorToBuffer(bufferP, sizeof(unsigned short));
 }
 

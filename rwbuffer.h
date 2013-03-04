@@ -23,6 +23,7 @@ class RWBuffer
         char *insertDoubleToBuffer(double d, char *bufferP);
         char *insertFloatToBuffer(float f, char *bufferP);
         char *insertLongToBuffer(long l, char *bufferP);
+        char *insertUnsignedShortToBuffer(unsigned short us, char *bufferP);
         // insert arrays of data
 		char *insertCStringToBuffer(char * c, char *bufferP );
      	char *insertIntArrayToBuffer(int intBuf[], int numInts, char *bufferP);
@@ -47,6 +48,7 @@ class RWBuffer
 		char * extractUnsignedInt(char * bufferP, unsigned int &i);
 		char * extractInt(char * bufferP, int &i);
 		char * extractShort(char * bufferP, short &i);
+		char * extractUnsignedShort(char * bufferP, unsigned short &us);
 		char * extractLong(char * bufferP, long &l);
 		char * extractFloat(char * bufferP, float &f);
 		char * extractDouble(char * bufferP, double &d);
