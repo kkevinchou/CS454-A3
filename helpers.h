@@ -29,4 +29,6 @@ MessageType getMessageTypeFromInt(int i);
 short getPort(int localSocketFd);
 string getHostname();
 
+void printSettings(int localSocketFd);
+
 #endif

@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "rwbuffer.h"
+#include "helpers.h"
 
 using namespace std;
 
@@ -38,6 +39,8 @@ int rpcInit() {
     }
 
     localSocketFd = createSocket();
+    listenOnSocket(localSocketFd);
+    printSettings(localSocketFd);
 
     if (localSocketFd < 0) {
         return localSocketFd;
@@ -85,17 +88,6 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 
 	return 0;
 }
-void printSettings(int localSocketFd) {
-    char localHostName[256];
-    gethostname(localHostName, 256);
-    cout << "SERVER_ADDRESS " << localHostName << endl;
-
-    struct sockaddr_in sin;
-    socklen_t len = sizeof(sin);
-    getsockname(localSocketFd, (struct sockaddr *)&sin, &len);
-    cout << "SERVER_PORT " << ntohs(sin.sin_port) << endl;
-}
-
 
 void handleExecuteMessage(char * message, unsigned int messageSize)
 {
@@ -391,7 +383,6 @@ int rpcExecute()
 {
 	if(registeredFunctions.size() == 0) return -1; // no functions to serve
 
-	listenOnSocket(localSocketFd);
     printSettings(localSocketFd);
 
     int max_fd = localSocketFd;

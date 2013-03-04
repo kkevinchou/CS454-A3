@@ -26,17 +26,6 @@ static map<rpcFunctionKey, server_info> servicesDictionary;
 static map<int, unsigned int> chunkInfo;
 static map<int, MessageType> msgInfo;
 
-void printSettings(int localSocketFd) {
-    char localHostName[256];
-    gethostname(localHostName, 256);
-    cout << "BINDER_ADDRESS " << localHostName << endl;
-
-    struct sockaddr_in sin;
-    socklen_t len = sizeof(sin);
-    getsockname(localSocketFd, (struct sockaddr *)&sin, &len);
-    cout << "BINDER_PORT " << ntohs(sin.sin_port) << endl;
-}
-
 extern bool debug;
 
 void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
