@@ -115,9 +115,5 @@ string Receiver::receiveMessageAsString()
             return ret;
         }
     }
-
-
     return "";
-
-
 }

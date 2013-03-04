@@ -33,8 +33,6 @@ int sendLocRequest(string name, int argTypes[]) {
     Sender s(binderSocketFd);
     s.sendLocRequestMessage(name, argTypes);
 
-    Receiver r(binderSocketFd);
-
     return 0;
 }
 
@@ -77,9 +75,45 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
     return r;
 }
 
+int processLocResponse(string &serverID, unsigned short &port) {
+    Receiver r(binderSocketFd);
+
+    unsigned int messageSize;
+
+    r.receiveMessageSize(messageSize);
+    MessageType msgType = r.receiveMessageType();
+
+    char buffer[messageSize];
+    char *bufferPointer = buffer;
+    r.receiveMessageGivenSize(messageSize, buffer);
+
+    RWBuffer b;
+
+    if (msgType == LOC_SUCCESS) {
+        bufferPointer = b.extractString(bufferPointer, serverID);
+        bufferPointer = b.extractUnsignedShort(bufferPointer, port);
+        return 0;
+    } else if (msgType == LOC_FAILURE) {
+        cerr << "FAILURE" << endl;
+        // TODO: We don't do anything with the reason code for now...
+        return -1;
+    } else {
+        cerr << "UNEXPECTED MSGTYPE IN processLocResponse()" << endl;
+        return -1;
+    }
+}
+
 int rpcCall(char* name, int* argTypes, void** args) {
     // cerr << "RPC CALL" << endl;
     sendLocRequest(string(name), argTypes);
+
+    string serverID;
+    unsigned short port = 13;
+
+    processLocResponse(serverID, port);
+
+    cerr << "SERVER : " << serverID << endl;
+    cerr << "PORT : " << port << endl;
     // char * binderAddressString = getenv ("BINDER_ADDRESS");
     // char * binderPortString = getenv("BINDER_PORT");
     // binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
