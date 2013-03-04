@@ -55,6 +55,7 @@ class RWBuffer
 		// helpers:
 		// treats bufferP as an int*, iterates until a 0 integer is found, returns length including 0
 		unsigned int returnArgTypesLength(char * bufferP);
+		unsigned int returnArgTypesLength(int * array);
 		// gets the third and fourth bytes, and translates it into a short
 		unsigned short getArrayLengthFromArgumentType(int argType);
 		// gets the second byte and translate it into an int

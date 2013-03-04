@@ -320,6 +320,32 @@ void handleExecuteMessage(char * message, unsigned int messageSize)
 			break;
 		}
 	}
+
+	// handle request
+	// name, argTypes, args
+	struct rpcFunctionKey k(string(name), argTypes);
+	skeleton s = registeredFunctions[k];
+
+	int failCode = 0;
+
+	if(s == NULL){
+		// error, function not found. send fail message
+		failCode = -1;
+	}
+	else
+	{
+		int r = s(argTypes, args);
+		if(r == 0)
+		{
+			// send success message
+		}
+		else
+		{
+			// send fail message
+			failCode = -1;
+		}
+	}
+
 }
 
 

@@ -12,6 +12,22 @@ int RWBuffer::getTypeFromArgumentType(int argType)
 {
     return (argType >> 16) & 255;
 }
+unsigned int RWBuffer::returnArgTypesLength(int * array)
+{
+	// keeps incrementing pointer until we find a 0
+    unsigned int counter = 0;
+    while(true)
+    {
+        counter++;
+
+        int type = *array;
+        array++;
+        if(type == 0) break;
+        
+    }
+
+    return counter;
+}
 
 unsigned int RWBuffer::returnArgTypesLength(char * bufferP)
 {

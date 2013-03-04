@@ -34,16 +34,14 @@ int sendLocRequest(string name, int argTypes[]) {
     return s.sendLocRequestMessage(name, argTypes);
 }
 
-
-int sendExecuteRequest(char* name, int* argTypes, void**args)
+unsigned int getClientServerMessageLength(char* name, int* argTypes, void**args)
 {
-    RWBuffer b;
-    Sender s(binderSocketFd);
     unsigned int argTypesLength = 0;
     unsigned int messageSize = 0;
 
     // calculate length of arguments
     int * argTypesP = argTypes;
+    RWBuffer b;
     while(*argTypesP != 0)
     {
         int argType = *argTypesP;
@@ -54,7 +52,7 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
         int type = b.getTypeFromArgumentType(argType);
         unsigned int size = sizeOfType(type);
         messageSize += length*size;
-//cout << "type "<<type << " size "<< size << endl;
+
         argTypesP++;
         argTypesLength++;
     }
@@ -62,8 +60,6 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
 
     // calculate length of argTypes
     messageSize += 4*argTypesLength;
-
-
 
     // calculate name size
     char * nameP = name;
@@ -73,6 +69,16 @@ int sendExecuteRequest(char* name, int* argTypes, void**args)
         nameP++;
     }
     messageSize++; //accountfor null termination char
+
+    return messageSize;
+}
+
+int sendExecuteRequest(char* name, int* argTypes, void**args)
+{
+    RWBuffer b;
+    Sender s(binderSocketFd);
+    unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
+    unsigned int messageSize = getClientServerMessageLength(name, argTypes, args);
 
     bool debug = true;
 
