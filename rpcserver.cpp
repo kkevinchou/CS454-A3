@@ -120,7 +120,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 	int argTypes[argTypesLength];
 	void * args[argTypesLength];
 
-	extractArgumentsMessage(bufferPointer, argTypes, args, argTypesLength);
+	extractArgumentsMessage(bufferPointer, argTypes, args, argTypesLength, true);
 
 	// handle request
 	// name, argTypes, args
@@ -180,6 +180,8 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		int r = s.sendMessage(4, EXECUTE_FAILURE, failureCodeMessage);
 		if(r != 0) cerr << "WARNING: Send EXECUTE_FAILURE message failed."<<endl;
 	}
+
+	cleanupArgumentsMessage(bufferPointer, argTypes, args, argTypesLength);
 
 }
 

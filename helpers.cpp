@@ -333,8 +333,30 @@ unsigned int getClientServerMessageLength(const char* name, int* argTypes, void*
 
     return messageSize;
 }
+int cleanupArgumentsMessage(char * bufferPointer, int argTypes[], void * args[], unsigned int argTypesLength)
+{
+    RWBuffer b;
+    bufferPointer = b.extractArgTypes(bufferPointer, argTypes);
 
-int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[], unsigned int argTypesLength)
+
+    for(unsigned int i = 0; i < argTypesLength-1 /*ignores the last (0) int*/; i++)
+    {
+        int argType = argTypes[i];
+        unsigned short int length = b.getArrayLengthFromArgumentType(argType);
+        int type = b.getTypeFromArgumentType(argType);
+        if(length==0)
+        {
+            delete args[i];
+        }
+        else
+        {
+            delete [] args[i];
+        }
+    }
+    cout << "Cleanup done"<<endl;
+    return 0;
+}
+int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[], unsigned int argTypesLength, bool allocateMemory)
 {
     RWBuffer b;
     bufferPointer = b.extractArgTypes(bufferPointer, argTypes);
@@ -346,35 +368,226 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
         unsigned short int length = b.getArrayLengthFromArgumentType(argType);
         int type = b.getTypeFromArgumentType(argType);
 
-        switch(type)
+        if(allocateMemory)
+        {
+
+        
+            switch(type)
+            {
+                case ARG_CHAR:
+                {
+                    if(length == 0)
+                    {
+
+                        char * c = new char();
+                        bufferPointer = b.extractChar(bufferPointer, *c);
+
+                        args[i] = (void *)c;
+
+                        if(debug) cout <<" "<<i<< ": "<< "Char "<< *c<<endl;
+                    }
+                    else
+                    {
+                        char * cArray = new char[length];
+                        bufferPointer = b.extractCharArray(bufferPointer, cArray, length);
+                        args[i] = (void *)cArray;
+
+                        if(debug){
+
+                            cout <<" "<<i<< ": "<< "Chars ";
+                            for(int j = 0; j < length; j++)
+                            {
+                                cout << cArray[j] << " ";
+                            }
+                            cout << endl;
+                        }
+                    }
+
+                }
+                break;
+                case ARG_SHORT:
+                {
+                    if(length == 0)
+                    {
+                        short * s = new short();
+                        bufferPointer = b.extractShort(bufferPointer, *s);
+
+                        args[i] = (void *)s;
+
+                        if(debug) cout <<" "<<i<< ": "<< "Short "<< *s<<endl;
+                    }
+                    else
+                    {
+                        short * sArray = new short[length];
+                        bufferPointer = b.extractShortArray(bufferPointer, sArray, length);
+                        args[i] = (void *)sArray;
+
+                        if(debug){
+
+                            cout <<" "<<i<< ": "<< "Shorts ";
+                            for(int j = 0; j < length; j++)
+                            {
+                                cout << sArray[j] << " ";
+                            }
+                            cout << endl;
+                        }
+                    }
+                }
+                break;
+                case ARG_INT:
+                {
+                    if(length == 0)
+                    {
+                        int * c = new int();
+                        bufferPointer = b.extractInt(bufferPointer, *c);
+
+                        args[i] = (void *)c;
+
+                        if(debug) cout <<" "<<i<< ": "<< "Int "<< *c<<endl;
+                    }
+                    else
+                    {
+                        int * cs = new int[length];
+                        bufferPointer = b.extractIntArray(bufferPointer, cs, length);
+                        args[i] = (void *)cs;
+
+                        if(debug){
+
+                            cout <<" "<<i<< ": "<< "Ints ";
+                            for(int j = 0; j < length; j++)
+                            {
+                                cout << cs[j] << " ";
+                            }
+                            cout << endl;
+                        }
+                    }
+
+                }
+                break;
+                case ARG_LONG:
+                {
+                    if(length == 0)
+                    {
+                        long * l = new long();
+                        bufferPointer = b.extractLong(bufferPointer, *l);
+
+                        args[i] = (void *)l;
+
+                        if(debug) cout <<" "<<i<< ": "<< "Long "<< *l<<endl;
+
+
+                    }
+                    else
+                    {
+                        long * lArray = new long[length];
+                        bufferPointer = b.extractLongArray(bufferPointer, lArray, length);
+                        args[i] = (void *)lArray;
+
+                        if(debug){
+
+                            cout <<" "<<i<< ": "<< "Longs ";
+                            for(int j = 0; j < length; j++)
+                            {
+                                cout << lArray[j] << " ";
+                            }
+                            cout << endl;
+                        }
+                    }
+                }
+                break;
+                case ARG_DOUBLE:
+                {
+                    if(length == 0)
+                    {
+                        double * d = new double();
+                        bufferPointer = b.extractDouble(bufferPointer, *d);
+
+                        args[i] = (void *)d;
+
+                        if(debug) cout <<" "<<i<< ": "<< "Double "<< *d<<endl;
+                    }
+                    else
+                    {
+                        double * dArray = new double[length];
+                        bufferPointer = b.extractDoubleArray(bufferPointer, dArray, length);
+                        args[i] = (void *)dArray;
+
+                        if(debug){
+
+                            cout <<" "<<i<< ": "<< "Doubles ";
+                            for(int j = 0; j < length; j++)
+                            {
+                                cout << dArray[j] << " ";
+                            }
+                            cout << endl;
+                        }
+                    }
+                }
+                break;
+                case ARG_FLOAT:
+                {
+                    if(length == 0)
+                    {
+                        float * f = new float();
+                        bufferPointer = b.extractFloat(bufferPointer, *f);
+
+                        args[i] = (void *)f;
+
+                        if(debug) cout <<" "<<i<< ": "<< "Float "<< *f<<endl;
+                    }
+                    else
+                    {
+                        float * fArray = new float[length];
+                        bufferPointer = b.extractFloatArray(bufferPointer, fArray, length);
+                        args[i] = (void *)fArray;
+
+                        if(debug){
+
+                            cout <<" "<<i<< ": "<< "Floats ";
+                            for(int j = 0; j < length; j++)
+                            {
+                                cout << fArray[j] << " ";
+                            }
+                            cout << endl;
+                        }
+                    }
+                }
+                break;
+                default:
+                if(debug) cout << "WARNING: Argument has unknown type"<<endl;
+                break;
+            }
+        }
+        else
+        {
+             switch(type)
         {
             case ARG_CHAR:
             {
                 if(length == 0)
                 {
+                    
+              
+                    bufferPointer = b.extractChar(bufferPointer, *((char *)args[i]));
 
-                    char * c = new char();
-                    bufferPointer = b.extractChar(bufferPointer, *c);
 
-                    args[i] = (void *)c;
-
-                    if(debug) cout <<" "<<i<< ": "<< "Char "<< *c<<endl;
+                    //if(debug) cout <<" "<<i<< ": "<< "Char "<< *(args[i])<<endl;
                 }
                 else
                 {
-                    char * cArray = new char[length];
-                    bufferPointer = b.extractCharArray(bufferPointer, cArray, length);
-                    args[i] = (void *)cArray;
+            
+                    bufferPointer = b.extractCharArray(bufferPointer, (char *)args[i], length);
+        
 
-                    if(debug){
+                   /* if(debug){
 
                         cout <<" "<<i<< ": "<< "Chars ";
                         for(int j = 0; j < length; j++)
                         {
-                            cout << cArray[j] << " ";
+                            cout << args[i][j] << " ";
                         }
                         cout << endl;
-                    }
+                    }*/
                 }
 
             }
@@ -384,27 +597,25 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
                 if(length == 0)
                 {
                     short * s = new short();
-                    bufferPointer = b.extractShort(bufferPointer, *s);
+                    bufferPointer = b.extractShort(bufferPointer, *((short *)args[i]));
 
-                    args[i] = (void *)s;
 
-                    if(debug) cout <<" "<<i<< ": "<< "Short "<< *s<<endl;
+                   // if(debug) cout <<" "<<i<< ": "<< "Short "<< *s<<endl;
                 }
                 else
                 {
-                    short * sArray = new short[length];
-                    bufferPointer = b.extractShortArray(bufferPointer, sArray, length);
-                    args[i] = (void *)sArray;
 
-                    if(debug){
+                    bufferPointer = b.extractShortArray(bufferPointer, (short *)args[i], length);
+
+                    /*if(debug){
 
                         cout <<" "<<i<< ": "<< "Shorts ";
                         for(int j = 0; j < length; j++)
                         {
-                            cout << sArray[j] << " ";
+                            cout << args[i][j] << " ";
                         }
                         cout << endl;
-                    }
+                    }*/
                 }
             }
             break;
@@ -412,20 +623,20 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
             {
                 if(length == 0)
                 {
-                    int * c = new int();
-                    bufferPointer = b.extractInt(bufferPointer, *c);
+                    
+                    bufferPointer = b.extractInt(bufferPointer, *((int *)args[i]));
 
-                    args[i] = (void *)c;
+        
 
-                    if(debug) cout <<" "<<i<< ": "<< "Int "<< *c<<endl;
+                    //if(debug) cout <<" "<<i<< ": "<< "Int "<< <<endl;
                 }
                 else
                 {
-                    int * cs = new int[length];
-                    bufferPointer = b.extractIntArray(bufferPointer, cs, length);
-                    args[i] = (void *)cs;
+             
+                    bufferPointer = b.extractIntArray(bufferPointer, (int *)args[i], length);
+               
 
-                    if(debug){
+                    /*if(debug){
 
                         cout <<" "<<i<< ": "<< "Ints ";
                         for(int j = 0; j < length; j++)
@@ -433,7 +644,7 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
                             cout << cs[j] << " ";
                         }
                         cout << endl;
-                    }
+                    }*/
                 }
 
             }
@@ -442,22 +653,22 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
             {
                 if(length == 0)
                 {
-                    long * l = new long();
-                    bufferPointer = b.extractLong(bufferPointer, *l);
+                    
+                    bufferPointer = b.extractLong(bufferPointer, *((long *)args[i]));
 
-                    args[i] = (void *)l;
 
-                    if(debug) cout <<" "<<i<< ": "<< "Long "<< *l<<endl;
+
+                  //  if(debug) cout <<" "<<i<< ": "<< "Long "<< *l<<endl;
 
 
                 }
                 else
                 {
-                    long * lArray = new long[length];
-                    bufferPointer = b.extractLongArray(bufferPointer, lArray, length);
-                    args[i] = (void *)lArray;
+                    //long * lArray = new long[length];
+                    bufferPointer = b.extractLongArray(bufferPointer, (long *)args[i], length);
+                    //args[i] = (void *)lArray;
 
-                    if(debug){
+                    /*if(debug){
 
                         cout <<" "<<i<< ": "<< "Longs ";
                         for(int j = 0; j < length; j++)
@@ -465,7 +676,7 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
                             cout << lArray[j] << " ";
                         }
                         cout << endl;
-                    }
+                    }*/
                 }
             }
             break;
@@ -473,20 +684,20 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
             {
                 if(length == 0)
                 {
-                    double * d = new double();
-                    bufferPointer = b.extractDouble(bufferPointer, *d);
+                    //double * d = new double();
+                    bufferPointer = b.extractDouble(bufferPointer, *((double *)args[i]));
 
-                    args[i] = (void *)d;
+                    //args[i] = (void *)d;
 
-                    if(debug) cout <<" "<<i<< ": "<< "Double "<< *d<<endl;
+                    //if(debug) cout <<" "<<i<< ": "<< "Double "<< *d<<endl;
                 }
                 else
                 {
-                    double * dArray = new double[length];
-                    bufferPointer = b.extractDoubleArray(bufferPointer, dArray, length);
-                    args[i] = (void *)dArray;
+                    //double * dArray = new double[length];
+                    bufferPointer = b.extractDoubleArray(bufferPointer, (double *)args[i], length);
+                    //args[i] = (void *)dArray;
 
-                    if(debug){
+                   /* if(debug){
 
                         cout <<" "<<i<< ": "<< "Doubles ";
                         for(int j = 0; j < length; j++)
@@ -494,7 +705,7 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
                             cout << dArray[j] << " ";
                         }
                         cout << endl;
-                    }
+                    }*/
                 }
             }
             break;
@@ -502,20 +713,20 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
             {
                 if(length == 0)
                 {
-                    float * f = new float();
-                    bufferPointer = b.extractFloat(bufferPointer, *f);
+                    //float * f = new float();
+                    bufferPointer = b.extractFloat(bufferPointer, *((float *)args[i]));
 
-                    args[i] = (void *)f;
+                    //args[i] = (void *)f;
 
-                    if(debug) cout <<" "<<i<< ": "<< "Float "<< *f<<endl;
+                    //if(debug) cout <<" "<<i<< ": "<< "Float "<< *f<<endl;
                 }
                 else
                 {
-                    float * fArray = new float[length];
-                    bufferPointer = b.extractFloatArray(bufferPointer, fArray, length);
-                    args[i] = (void *)fArray;
+                   // float * fArray = new float[length];
+                    bufferPointer = b.extractFloatArray(bufferPointer, (float *)args[i], length);
+                   // args[i] = (void *)fArray;
 
-                    if(debug){
+                   /* if(debug){
 
                         cout <<" "<<i<< ": "<< "Floats ";
                         for(int j = 0; j < length; j++)
@@ -523,13 +734,14 @@ int extractArgumentsMessage(char * bufferPointer, int argTypes[], void * args[],
                             cout << fArray[j] << " ";
                         }
                         cout << endl;
-                    }
+                    }*/
                 }
             }
             break;
             default:
             if(debug) cout << "WARNING: Argument has unknown type"<<endl;
             break;
+        }
         }
     }
     cout << "DONE";

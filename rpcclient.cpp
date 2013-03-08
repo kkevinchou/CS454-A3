@@ -100,7 +100,7 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
             replyMessageP = b.extractString(replyMessageP, functionName);
             if(strcmp(functionName.c_str(), name) == 0)
             {
-                extractArgumentsMessage(replyMessageP, argTypes, args, argTypesLength);
+                extractArgumentsMessage(replyMessageP, argTypes, args, argTypesLength, false);
             }
             else
             {
