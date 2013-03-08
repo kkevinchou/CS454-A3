@@ -218,7 +218,7 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
         MessageType type;
         if(receiver.receiveMessageType(type) == 0)
         {
-        	 if (type == EXECUTE) {
+        	 if (binderSocketFd != clientSocketFd && type == EXECUTE) {
 	            cout << "Received execute message"<<endl;
 
 
@@ -249,7 +249,11 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 		            success = true;
 		        }
 		    }
-		    // else if TERMINATE then return negative
+		    else if(binderSocketFd == clientSocketFd && type == TERMINATE)
+		    {
+		    	// we received a terminate message from the binder, so we kill ourself
+		    	return -1;
+		    }
         }
 
        
@@ -273,6 +277,7 @@ int rpcExecute()
     fd_set master_set, working_set;
     FD_ZERO(&master_set);
     FD_SET(localSocketFd, &master_set);
+    FD_SET(binderSocketFd, &master_set);
 
     map<int, unsigned int> chunkInfo;
 
@@ -290,7 +295,16 @@ int rpcExecute()
             if (FD_ISSET(i, &working_set)) {
                 if (i != localSocketFd) {
                     int clientSocketFd = i;
-                    handleRequest(clientSocketFd, &master_set, chunkInfo);
+                    int requestCode = handleRequest(clientSocketFd, &master_set, chunkInfo);
+                    if(requestCode < 0)
+                    {
+                    	// received a termination signal from binder
+                    	// break out of the execute loop and return -1
+                    	// to indicate shut down
+                    	close(localSocketFd);
+                    	close(binderSocketFd);
+                    	return requestCode;
+                    }
                 } else {
                     cout << "accept connection"<<endl;
                     int newSocketFd = acceptConnection(localSocketFd);
