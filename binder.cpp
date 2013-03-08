@@ -23,7 +23,8 @@
 
 using namespace std;
 
-static map<rpcFunctionKey, list<server_info *>* > servicesDictionary;
+static map<rpcFunctionKey, list<server_info *> * > servicesDictionary;
+static list<server_info *> roundRobinQueue;
 // static map<int, server_info>
 static map<int, unsigned int> chunkInfo;
 static map<int, MessageType> msgInfo;
@@ -69,6 +70,24 @@ void addService(string name, int argTypes[], string serverID, unsigned short por
     hostList->push_back(l);
 }
 
+void putServerInQueue(string serverID, unsigned short port) {
+    bool inQueue = false;
+    server_info *location = new server_info(serverID, port);
+    for (list<server_info *>::iterator it = roundRobinQueue.begin(); it != roundRobinQueue.end(); it++) {
+        server_info *curLocation = (*it);
+        // if ((curLocation->server_identifier == serverID) && (curLocation->port == port)) {
+        if (*curLocation == *location) {
+            inQueue = true;
+        }
+    }
+
+    if (inQueue) {
+        delete location;
+    } else {
+        roundRobinQueue.push_back(location);
+    }
+}
+
 void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
     string serverID;
     unsigned short port;
@@ -89,6 +108,38 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
     b.extractArgTypes(bufferPointer, argTypes);
 
     addService(name, argTypes, serverID, port);
+    putServerInQueue(serverID, port);
+}
+
+server_info *getRoundRobinServer(const rpcFunctionKey &key) {
+    if (servicesDictionary.find(key) == servicesDictionary.end()) {
+        return NULL;
+    }
+
+    list<server_info *> *availServers = servicesDictionary[key];
+
+    if (availServers->size() == 1) {
+        return availServers->front();
+    }
+
+    server_info *selectedServer = NULL;
+    for (list<server_info *>::iterator it = roundRobinQueue.begin(); it != roundRobinQueue.end(); it++) {
+        server_info *nextRRServer = (*it);
+        for (list<server_info *>::iterator it2 = availServers->begin(); it2 != availServers->end(); it2++) {
+            server_info *supportingServer = (*it2);
+            if (*nextRRServer == *supportingServer) {
+                selectedServer = nextRRServer;
+            }
+        }
+        if (nextRRServer != NULL) {
+            cerr << "front port was: " << roundRobinQueue.front()->port << endl;
+            roundRobinQueue.splice(roundRobinQueue.end(), roundRobinQueue, it);
+            cerr << "front port is: " << roundRobinQueue.front()->port << endl;
+            cerr << "last port is: " << roundRobinQueue.back()->port << endl;
+        }
+    }
+
+    return selectedServer;
 }
 
 void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize) {
@@ -105,9 +156,10 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
 
     rpcFunctionKey key(name, argTypes);
 
-    if (servicesDictionary.find(key) != servicesDictionary.end()) {
+    server_info *location = getRoundRobinServer(key);
+
+    if (location != NULL) {
         cerr << "LOC REQ FOUND!" << endl;
-        server_info *location = servicesDictionary[key]->front();
         cerr << "server_identifier = " << location->server_identifier << endl;
         cerr << "port = " << location->port << endl;
         sender.sendLocSuccessMessage(location->server_identifier, location->port);
@@ -115,6 +167,17 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
         cerr << "LOC REQ NOT FOUND!" << endl;
         sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
     }
+
+    // if (servicesDictionary.find(key) != servicesDictionary.end()) {
+    //     cerr << "LOC REQ FOUND!" << endl;
+    //     server_info *location = servicesDictionary[key]->front();
+    //     cerr << "server_identifier = " << location->server_identifier << endl;
+    //     cerr << "port = " << location->port << endl;
+    //     sender.sendLocSuccessMessage(location->server_identifier, location->port);
+    // } else {
+    //     cerr << "LOC REQ NOT FOUND!" << endl;
+    //     sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
+    // }
 }
 
 void handleRequest(int clientSocketFd, fd_set *master_set) {
@@ -124,7 +187,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
     bool closed = false;
     unsigned int messageSize;
     if (chunkInfo[clientSocketFd] == 0) {
-         //   cout << "nb" << nb << " " << numBytes<<endl;
         if(receiver.receiveMessageSize(messageSize) == 0 )
         {
             chunkInfo[clientSocketFd] = messageSize;
@@ -139,7 +201,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
             {
                 closed = true;
             }
-            
+
         }
         else
         {
