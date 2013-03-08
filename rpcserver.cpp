@@ -16,6 +16,8 @@
 #include "rwbuffer.h"
 #include "helpers.h"
 
+#include <pthread.h>
+
 using namespace std;
 static bool debug = true;
 static int localSocketFd;
@@ -185,8 +187,24 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 
 }
 
+void * handleExecuteMessageThreadFunction(void * args)
+{
+	// thread starts
+	void ** argArray = (void **)args;
+	int * clientSocketFd = ((int *)argArray[0]);
+	unsigned int * messageSize = ((unsigned int *)argArray[1]);
+	char * buffer = (char *)argArray[2];
 
-void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
+	handleExecuteMessage(*clientSocketFd,buffer, *messageSize);
+
+
+	// deallocate arguments
+	delete clientSocketFd;
+	delete messageSize;
+	delete [] buffer;
+	// thread finishes
+}
+int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
 	Receiver receiver(clientSocketFd);
     bool success = false;
 
@@ -201,7 +219,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
         if(receiver.receiveMessageType(type) == 0)
         {
         	 if (type == EXECUTE) {
-	           // cout << "Received execute message"<<endl;
+	            cout << "Received execute message"<<endl;
 
 
 		        char buffer[messageSize];
@@ -209,12 +227,29 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
 		        {
 
 		        	// TODO: handle in another thread in the future
-		           	handleExecuteMessage(clientSocketFd,buffer, messageSize);
+		        	char * bufferCopy = new char[messageSize];
+		        	unsigned int * messageSizeCopy = new unsigned int(messageSize);
+		        	int * clientSocketFdCopy = new int(clientSocketFd);
+		        	void ** threadArguments = new void*[3];
+
+		        	// copy memory over
+		        	memcpy ( bufferCopy, buffer, messageSize);
+
+
+		        	threadArguments[0] = (void *)clientSocketFdCopy;
+		        	threadArguments[1] = (void *)messageSizeCopy;
+		        	threadArguments[2] = (void *)bufferCopy;
+
+		        	pthread_t sendingThread ;
+    				pthread_create(&sendingThread, NULL, &handleExecuteMessageThreadFunction, (void *)threadArguments);
+
+		           	//handleExecuteMessage(clientSocketFd,buffer, messageSize);
 
 
 		            success = true;
 		        }
 		    }
+		    // else if TERMINATE then return negative
         }
 
        
@@ -222,11 +257,12 @@ void handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int
     }
 
     if (!success) {
+    	cout << "Client socket closed "<<endl;
         chunkInfo[clientSocketFd] = 0;
         FD_CLR(clientSocketFd, master_set);
         close(clientSocketFd);
     }
-
+    return 0;
 }
 int rpcExecute()
 {

@@ -254,7 +254,7 @@ int insertClientServerMessageToBuffer(char *messagePointer, const char* name, in
             case ARG_LONG:
             {
                 long * longs = (long *)arg;
-                if(debug) cout << " "<< i<<": Long ";
+                if(debug) cout << " "<< i<<": Long "<<length<<" ";
                 for(int j = 0; j < length; j++)
                 {
                     if(debug) cout << longs[j] << " ";
