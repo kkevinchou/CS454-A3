@@ -118,10 +118,6 @@ server_info *getRoundRobinServer(const rpcFunctionKey &key) {
 
     list<server_info *> *availServers = servicesDictionary[key];
 
-    if (availServers->size() == 1) {
-        return availServers->front();
-    }
-
     server_info *selectedServer = NULL;
     for (list<server_info *>::iterator it = roundRobinQueue.begin(); it != roundRobinQueue.end(); it++) {
         server_info *nextRRServer = (*it);
@@ -167,17 +163,6 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
         cerr << "LOC REQ NOT FOUND!" << endl;
         sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
     }
-
-    // if (servicesDictionary.find(key) != servicesDictionary.end()) {
-    //     cerr << "LOC REQ FOUND!" << endl;
-    //     server_info *location = servicesDictionary[key]->front();
-    //     cerr << "server_identifier = " << location->server_identifier << endl;
-    //     cerr << "port = " << location->port << endl;
-    //     sender.sendLocSuccessMessage(location->server_identifier, location->port);
-    // } else {
-    //     cerr << "LOC REQ NOT FOUND!" << endl;
-    //     sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
-    // }
 }
 
 void handleRequest(int clientSocketFd, fd_set *master_set) {
