@@ -29,6 +29,8 @@ static list<server_info *> roundRobinQueue;
 static map<int, unsigned int> chunkInfo;
 static map<int, MessageType> msgInfo;
 
+static bool terminating = false;
+
 extern bool debug;
 
 void addService(string name, int argTypes[], string serverID, unsigned short port) {
@@ -165,6 +167,12 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
     }
 }
 
+void handleTerminateRequest() {
+    terminating = true;
+
+
+}
+
 void handleRequest(int clientSocketFd, fd_set *master_set) {
     Receiver receiver(clientSocketFd);
     Sender sender(clientSocketFd);
@@ -204,6 +212,8 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
                 handleRegisterRequest(receiver, buffer, size);
             } else if (msgType == LOC_REQUEST) {
                 handleLocRequest(receiver, sender, buffer, size);
+            } else if (msgType == TERMINATE) {
+                handleTerminateRequest();
             } else {
                 cerr << "[BINDER] UNHANDLED MESSAGE TYPE: " << static_cast<int>(msgType) << endl;
             }
@@ -250,7 +260,9 @@ int main(int argc, char *argv[]) {
             if (FD_ISSET(i, &working_set)) {
                 if (i != localSocketFd) {
                     int clientSocketFd = i;
-                    handleRequest(clientSocketFd, &master_set);
+                    if (!terminating) {
+                        handleRequest(clientSocketFd, &master_set);
+                    }
                 } else {
                     int newSocketFd = acceptConnection(localSocketFd);
                     max_fd = newSocketFd;

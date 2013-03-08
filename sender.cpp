@@ -99,6 +99,11 @@ Sender::Sender(int socketFileDescriptor)
 === PROTOCOL FUNCTIONS
 *****************************************************/
 
+int Sender::sendTerminateMessage() {
+ 	sendMessage(0, TERMINATE, NULL);
+ 	return 0;
+}
+
 int Sender::sendRegisterMessage(string serverID, unsigned short port, string name, int argTypes[]) {
 	unsigned int serverIdSize = serverID.size() + 1;
 	unsigned int portSize = 2;
