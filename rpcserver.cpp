@@ -159,7 +159,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		        cout << "Sending an EXECUTE_SUCCESS message of size "<<messageSize << ": "<<endl;
 		        for(unsigned int i = 0; i < messageSize; i++)
 		        {
-		            cout << (int)message[i] << " ";
+		            cout << (int)returnMessage[i] << " ";
 
 		        }
 		        cout << endl;

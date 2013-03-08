@@ -6,7 +6,7 @@ using namespace std;
 // byte helpers
 unsigned short RWBuffer::getArrayLengthFromArgumentType(int argType)
 {
-    return argType & 65534;
+  return argType & 65535;
 }
 int RWBuffer::getTypeFromArgumentType(int argType)
 {
