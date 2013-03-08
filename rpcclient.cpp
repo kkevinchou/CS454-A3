@@ -185,6 +185,8 @@ int rpcCall(char* name, int* argTypes, void** args) {
 int rpcTerminate()
 {
     // TODO: send terminate message
+    Sender s(binderSocketFd);
+    s.sendTerminateMessage();
 
     return 0;
 }
