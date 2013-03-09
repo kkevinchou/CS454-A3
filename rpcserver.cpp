@@ -128,6 +128,7 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 
 		struct rpcFunctionKey k(string(name), argTypes);
 		registeredFunctions[k] = f;
+		cout << "Size is: "<< registeredFunctions.size() << endl;
 
 		return reasonCode;
 	}
@@ -177,10 +178,10 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		cout << endl;
 		cout << "Received an EXECUTE message of size "<<messageSize<<": "<<endl;
 	}
-	/*for(unsigned int i = 0; i < messageSize; i++)
+	for(unsigned int i = 0; i < messageSize; i++)
 	{
 		cout << (int)message[i]<<" ";
-	}*/
+	}
 	cout << endl;
 	RWBuffer b;
 	
@@ -189,11 +190,15 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 
 	// Sender s(clientSocketFd);
 	// s.sendMessage(recvStr);
-	string name;
+	//string name;
+	size_t nameSize = strlen(message);
+	char name[nameSize+1];
 
 
 	char * bufferPointer = message;
-	bufferPointer = b.extractString(bufferPointer, name);
+
+	//bufferPointer = b.extractString(bufferPointer, name);
+	bufferPointer = b.extractCharArray(bufferPointer, name, nameSize+1);
 	if(debug)cout << "Name: "<<name<<endl;
 	
 
@@ -226,21 +231,21 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 			// send success message
 			char returnMessage[messageSize];
 
-			insertClientServerMessageToBuffer(returnMessage, name.c_str(), argTypes, args);
+			insertClientServerMessageToBuffer(returnMessage, name, argTypes, args);
 		    if(debug)
 		    {
 		        cout << endl;
-		        cout << "Name: " << name<<endl;
+		        cout << "2nd Name: " << name<<endl;
 		    }
 
 		    if(debug)
 		    {
 		        cout << "Sending an EXECUTE_SUCCESS message of size "<<messageSize << ": "<<endl;
-		       /* for(unsigned int i = 0; i < messageSize; i++)
+		       for(unsigned int i = 0; i < messageSize; i++)
 		        {
 		            cout << (int)returnMessage[i] << " ";
 
-		        }*/
+		        }
 		        cout << endl;
 		    }
 		    int r = s.sendMessage(messageSize, EXECUTE_SUCCESS, returnMessage);
@@ -355,6 +360,13 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
         chunkInfo[clientSocketFd] = 0;
         FD_CLR(clientSocketFd, master_set);
         close(clientSocketFd);
+
+        if(clientSocketFd == binderSocketFd)
+        {
+        	// binder closed, so we should termiante as well
+        	return -1;
+        }
+
     }
     return 0;
 }

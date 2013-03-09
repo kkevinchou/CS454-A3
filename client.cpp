@@ -87,17 +87,26 @@ int main()
   args3 = (void **)malloc(count3 * sizeof(void *));
   args3[0] = (void *)a3;
 
-  /* prepare the arguemtns for f4 */
-  char *a4 = "non_exist_file_to_be_printed";
+  /* prepare the arguments for f3 */
+  
+
+  argTypes3[0] = (1 << ARG_OUTPUT) | (1 << ARG_INPUT) | (ARG_LONG << 16) | 15;
+  argTypes3[1] = 0;
+
+  args3 = (void **)malloc(count3 * sizeof(void *));
+  args3[0] = (void *)a3;
+
+ long a4 = 10;
   int count4 = 1;
   int argTypes4[count4 + 1];
   void **args4;
 
-  argTypes4[0] = (1 << ARG_INPUT) | (ARG_CHAR << 16) | strlen(a4);
+
+  argTypes4[0] = (1 << ARG_OUTPUT) | (1 << ARG_INPUT) | (ARG_LONG << 16);
   argTypes4[1] = 0;
 
   args4 = (void **)malloc(count4 * sizeof(void *));
-  args4[0] = (void *)a4;
+  args4[0] = (void *)&a4;
 
   /* rpcCalls */
   int s0 = rpcCall("f0", argTypes0, args0);
@@ -136,13 +145,13 @@ int main()
    int s3 = rpcCall("f3", argTypes3, args3);
   /* test the return of f3 */
   printf(
-    "\nEXPECTED return of f3 is: 110 109 108 107 106 105 104 103 102 101 11\n"
+    "\nEXPECTED return of f3 is: 110 109 108 107 106 105 104 103 102 101 70 50 40 20 11\n"
   );
 
   if (s3 >= 0) {
     printf("ACTUAL return of f3 is: ");
     int i;
-    for (i = 0; i < 11; i++) {
+    for (i = 0; i < 15; i++) {
       printf(" %ld", *(((long *)args3[0]) + i));
     }
     printf("\n");
@@ -151,11 +160,22 @@ int main()
     printf("Error: %d\n", s3);
   }
 
-   int s4 = rpcCall("f4", argTypes4, args4);
-   /* test the return of f4 */
-   printf("\ncalling f4 to print an non existed file on the server");
-   printf("\nEXPECTED return of f4: some integer other than 0");
-   printf("\nACTUAL return of f4: %d\n", s4);
+   int s4 = rpcCall("f3", argTypes4, args4);
+  /* test the return of f3 */
+  printf(
+    "\nEXPECTED return of f3 is: printing 10\n"
+  );
+
+  if (s4 >= 0) {
+    printf("ACTUAL return of f3 is: ");
+
+    printf(" %ld", *((long *)args4[0]));
+    
+    printf("\n");
+  }
+  else {
+    printf("Error: %d\n", s4);
+  }
 
   /* rpcTerminate */
   printf("\ndo you want to terminate? y/n: ");

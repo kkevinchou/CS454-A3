@@ -64,7 +64,7 @@ void f3(long a[]) {
 }
 void f3(long a) {
 
-    cout << "Called f3b" << endl;
+    cout << "Called f3b: "<< a  << endl;
 }
 
 /*

@@ -144,6 +144,8 @@ int main() {
         printf("Error: %d\n", s2);
       }
     } else if (func == "f3") {
+      long a3copy[11] = {11, 109, 107, 105, 103, 101, 102, 104, 106, 108, 110};
+      args3[0] = (void *)(a3copy);
       int s3 = rpcCall("f3", argTypes3, args3);
 
       /* test the return of f3 */
@@ -159,6 +161,8 @@ int main() {
         }
         printf("\n");
       }
+
+      
       else {
         printf("Error: %d\n", s3);
       }

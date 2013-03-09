@@ -15,7 +15,7 @@
 #include "rpc.h"
 #include "rwbuffer.h"
 using namespace std;
-static bool debug = false;
+static bool debug = true;
 unsigned int sizeOfType(int type)
 {
     switch(type)

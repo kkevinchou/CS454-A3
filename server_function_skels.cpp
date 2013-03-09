@@ -1,6 +1,8 @@
 #include "server_functions.h"
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
+using namespace std;
 
 int f0_Skel(int *argTypes, void **args) {
 
@@ -27,13 +29,13 @@ int f2_Skel(int *argTypes, void **args) {
 }
 
 int f3_Skel(int *argTypes, void **args) {
-
+cout << "Called f3"<<endl;
   f3((long *)(*args));
   return 0;
 }
 
 int f3b_Skel(int *argTypes, void **args) {
-
+cout << "Called f3b"<<endl;
   f3(*((long *)(*args)));
   return 0;
 }
