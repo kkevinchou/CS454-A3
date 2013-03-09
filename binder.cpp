@@ -25,7 +25,7 @@ using namespace std;
 
 static map<rpcFunctionKey, list<server_info *> * > servicesDictionary;
 static list<server_info *> roundRobinQueue;
-// static map<int, server_info>
+static map<int, server_info *> fdToServerMap;
 static map<int, unsigned int> chunkInfo;
 static map<int, MessageType> msgInfo;
 
@@ -72,12 +72,12 @@ void addService(string name, int argTypes[], string serverID, unsigned short por
     hostList->push_back(l);
 }
 
-void putServerInQueue(string serverID, unsigned short port) {
+void registerServer(string serverID, unsigned short port, int serverFd) {
     bool inQueue = false;
     server_info *location = new server_info(serverID, port);
+
     for (list<server_info *>::iterator it = roundRobinQueue.begin(); it != roundRobinQueue.end(); it++) {
         server_info *curLocation = (*it);
-        // if ((curLocation->server_identifier == serverID) && (curLocation->port == port)) {
         if (*curLocation == *location) {
             inQueue = true;
         }
@@ -87,10 +87,11 @@ void putServerInQueue(string serverID, unsigned short port) {
         delete location;
     } else {
         roundRobinQueue.push_back(location);
+        fdToServerMap[serverFd] = location;
     }
 }
 
-void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize) {
+void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize, int serverFd) {
     string serverID;
     unsigned short port;
     string name;
@@ -110,7 +111,7 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
     b.extractArgTypes(bufferPointer, argTypes);
 
     addService(name, argTypes, serverID, port);
-    putServerInQueue(serverID, port);
+    registerServer(serverID, port, serverFd);
 }
 
 server_info *getRoundRobinServer(const rpcFunctionKey &key) {
@@ -130,10 +131,10 @@ server_info *getRoundRobinServer(const rpcFunctionKey &key) {
             }
         }
         if (nextRRServer != NULL) {
-            cerr << "front port was: " << roundRobinQueue.front()->port << endl;
+            // cerr << "front port was: " << roundRobinQueue.front()->port << endl;
             roundRobinQueue.splice(roundRobinQueue.end(), roundRobinQueue, it);
-            cerr << "front port is: " << roundRobinQueue.front()->port << endl;
-            cerr << "last port is: " << roundRobinQueue.back()->port << endl;
+            // cerr << "front port is: " << roundRobinQueue.front()->port << endl;
+            // cerr << "last port is: " << roundRobinQueue.back()->port << endl;
         }
     }
 
@@ -170,7 +171,41 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
 void handleTerminateRequest() {
     terminating = true;
 
+    for (map<int, server_info *>::iterator it = fdToServerMap.begin(); it != fdToServerMap.end(); it++) {
+        int serverFd = it->first;
+        Sender s(serverFd);
+        s.sendTerminateMessage();
+    }
+}
 
+void removeServer(int serverFd) {
+    server_info *server = fdToServerMap[serverFd];
+
+    // cerr << "roundRobinQueue before size = " << roundRobinQueue.size() << endl;
+    roundRobinQueue.remove(server);
+    // cerr << "roundRobinQueue after size = " << roundRobinQueue.size() << endl;
+
+    // cerr << "fdToServerMap before size = " << fdToServerMap.size() << endl;
+    map<int, server_info *>::iterator it = fdToServerMap.find(serverFd);
+    fdToServerMap.erase(it);
+    // cerr << "fdToServerMap after size = " << fdToServerMap.size() << endl;
+
+    for (map<rpcFunctionKey, list<server_info *> * >::iterator it = servicesDictionary.begin(); it != servicesDictionary.end(); it++) {
+        list<server_info *> *hostList = it->second;
+        for (list<server_info *>::iterator it2 = hostList->begin(); it2 != hostList->end(); it2++) {
+            if (*server == *(*it2)) {
+                // cerr << "hostList before size = " << hostList->size() << endl;
+                hostList->erase(it2);
+                // cerr << "hostList after size = " << hostList->size() << endl;
+                break;
+            }
+        }
+    }
+
+    delete server;
+
+    chunkInfo[serverFd] = 0;
+    msgInfo[serverFd] = ERROR;
 }
 
 void handleRequest(int clientSocketFd, fd_set *master_set) {
@@ -209,7 +244,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
             MessageType msgType = msgInfo[clientSocketFd];
 
             if (msgType == REGISTER) {
-                handleRegisterRequest(receiver, buffer, size);
+                handleRegisterRequest(receiver, buffer, size, clientSocketFd);
             } else if (msgType == LOC_REQUEST) {
                 handleLocRequest(receiver, sender, buffer, size);
             } else if (msgType == TERMINATE) {
@@ -225,7 +260,9 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
     }
 
     if (closed) {
+        cerr << "[BINDER] Socket detected to be closed!" << endl;
         chunkInfo[clientSocketFd] = 0;
+        removeServer(clientSocketFd);
         FD_CLR(clientSocketFd, master_set);
         close(clientSocketFd);
     }
