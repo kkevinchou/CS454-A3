@@ -94,7 +94,7 @@ void registerServer(string serverID, unsigned short port, int serverFd) {
     }
 }
 
-void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize, int serverFd) {
+void handleRegisterRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize, int serverFd) {
     bool failed = false;
     ReasonCode r = SUCCESS;
 
@@ -124,11 +124,10 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
         r = FAILURE;
     }
 
-    Sender s(serverFd);
     if (!failed) {
-        s.sendRegisterSuccessMessage(r);
+        sender.sendRegisterSuccessMessage(r);
     } else {
-        s.sendRegisterFailureMessage(r);
+        sender.sendRegisterFailureMessage(r);
     }
 }
 
@@ -300,7 +299,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
             MessageType msgType = msgInfo[clientSocketFd];
 
             if (msgType == REGISTER) {
-                handleRegisterRequest(receiver, buffer, size, clientSocketFd);
+                handleRegisterRequest(receiver, sender, buffer, size, clientSocketFd);
             } else if (msgType == LOC_REQUEST) {
                 handleLocRequest(receiver, sender, buffer, size);
             } else if (msgType == TERMINATE) {
