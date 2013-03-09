@@ -170,7 +170,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		else
 		{
 			// send fail message
-			failCode = -1;
+			failCode = r;
 		}
 	}
 
