@@ -185,11 +185,12 @@ server_info *getRoundRobinServer(const rpcFunctionKey &key) {
                 selectedServer = nextRRServer;
             }
         }
-        if (nextRRServer != NULL) {
+        if (selectedServer != NULL) {
             // cerr << "front port was: " << roundRobinQueue.front()->port << endl;
             roundRobinQueue.splice(roundRobinQueue.end(), roundRobinQueue, it);
             // cerr << "front port is: " << roundRobinQueue.front()->port << endl;
             // cerr << "last port is: " << roundRobinQueue.back()->port << endl;
+            break;
         }
     }
 
