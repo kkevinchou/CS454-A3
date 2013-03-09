@@ -179,6 +179,10 @@ void handleTerminateRequest() {
 }
 
 void removeServer(int serverFd) {
+    if (fdToServerMap.find(serverFd) == fdToServerMap.end()) {
+        return;
+    }
+
     server_info *server = fdToServerMap[serverFd];
 
     // cerr << "roundRobinQueue before size = " << roundRobinQueue.size() << endl;
@@ -224,12 +228,14 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
             if(receiver.receiveMessageType(msgType) == 0)
             {
                 msgInfo[clientSocketFd] = msgType;
+                if (msgType == TERMINATE) {
+                    handleTerminateRequest();
+                }
             }
             else
             {
                 closed = true;
             }
-
         }
         else
         {
@@ -247,8 +253,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
                 handleRegisterRequest(receiver, buffer, size, clientSocketFd);
             } else if (msgType == LOC_REQUEST) {
                 handleLocRequest(receiver, sender, buffer, size);
-            } else if (msgType == TERMINATE) {
-                handleTerminateRequest();
             } else {
                 cerr << "[BINDER] UNHANDLED MESSAGE TYPE: " << static_cast<int>(msgType) << endl;
             }
