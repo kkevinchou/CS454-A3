@@ -82,6 +82,27 @@ struct server_info {
     }
 };
 
+struct service_info {
+    string server_identifier;
+    unsigned short port;
+    struct rpcFunctionKey *functionKey;
+
+    service_info(string server_identifier, unsigned short port, struct rpcFunctionKey *functionKey) : server_identifier(server_identifier), port(port), functionKey(functionKey) {}
+    service_info() {
+        server_identifier = "";
+        port = 0;
+        functionKey = NULL;
+    }
+
+    service_info(const struct service_info &r) {
+        server_identifier = r.server_identifier;
+        port = r.port;
+        functionKey = r.functionKey;
+    }
+};
+
+bool operator == (const server_info &l, const service_info &r);
+bool operator == (const service_info &l, const service_info &r);
 bool operator == (const server_info &l, const server_info &r);
 
 struct rpcFunctionKey

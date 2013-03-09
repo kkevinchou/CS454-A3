@@ -23,7 +23,7 @@
 
 using namespace std;
 
-static map<rpcFunctionKey, list<server_info *> * > servicesDictionary;
+static map<rpcFunctionKey, list<service_info *> * > servicesDictionary;
 static list<server_info *> roundRobinQueue;
 static map<int, server_info *> fdToServerMap;
 static map<int, unsigned int> chunkInfo;
@@ -31,6 +31,21 @@ static map<int, MessageType> msgInfo;
 
 static bool terminating;
 extern bool debug;
+
+int *copyArgTypes(int argTypes[]) {
+    unsigned int argTypesLength = 0;
+    while (argTypes[argTypesLength++]);
+    int *memArgTypes = new int[argTypesLength];
+
+    unsigned int i = 0;
+    while (argTypes[i] != 0) {
+        memArgTypes[i] = argTypes[i];
+        i++;
+    }
+    memArgTypes[i] = 0;
+
+    return memArgTypes;
+}
 
 ReasonCode addService(string name, int argTypes[], string serverID, unsigned short port) {
     rpcFunctionKey key(name, argTypes);
@@ -41,29 +56,23 @@ ReasonCode addService(string name, int argTypes[], string serverID, unsigned sho
     if (servicesDictionary.find(key) == servicesDictionary.end()) {
         // The key doesn't exist.  Since argTypes is allocated on the stack, we
         // need to allocate memory for the key on the heap.
-        unsigned int argTypesLength = 0;
-        while (argTypes[argTypesLength++]);
-        int *memArgTypes = new int[argTypesLength];
 
-        unsigned int i = 0;
-        while (argTypes[i] != 0) {
-            memArgTypes[i] = argTypes[i];
-            i++;
-        }
-        memArgTypes[i] = 0;
-
+        int *memArgTypes = copyArgTypes(argTypes);
         key = rpcFunctionKey(name, memArgTypes);
-        servicesDictionary[key] = new list<server_info *>();
+        servicesDictionary[key] = new list<service_info *>();
         cerr << "NEW KEY" << endl;
     } else {
         cerr << "OLD KEY" << endl;
     }
 
-    list<server_info *> *hostList = servicesDictionary[key];
-    server_info *l = new server_info(location);
+    list<service_info *> *hostList = servicesDictionary[key];
 
-    for (list<server_info *>::iterator it = hostList->begin(); it != hostList->end(); it++) {
-        server_info *oldServerInfo = *it;
+    int *memArgTypes = copyArgTypes(argTypes);
+    rpcFunctionKey *service_key = new rpcFunctionKey(name, memArgTypes);
+    service_info *l = new service_info(serverID, port, service_key);
+
+    for (list<service_info *>::iterator it = hostList->begin(); it != hostList->end(); it++) {
+        service_info *oldServerInfo = *it;
         if (*oldServerInfo == *l) {
             hostList->remove(oldServerInfo);
             delete oldServerInfo;
@@ -112,9 +121,9 @@ void removeServer(int serverFd) {
     }
     // cerr << "fdToServerMap after size = " << fdToServerMap.size() << endl;
 
-    for (map<rpcFunctionKey, list<server_info *> * >::iterator it = servicesDictionary.begin(); it != servicesDictionary.end(); it++) {
-        list<server_info *> *hostList = it->second;
-        for (list<server_info *>::iterator it2 = hostList->begin(); it2 != hostList->end(); it2++) {
+    for (map<rpcFunctionKey, list<service_info *> * >::iterator it = servicesDictionary.begin(); it != servicesDictionary.end(); it++) {
+        list<service_info *> *hostList = it->second;
+        for (list<service_info *>::iterator it2 = hostList->begin(); it2 != hostList->end(); it2++) {
             if (*server == *(*it2)) {
                 // cerr << "hostList before size = " << hostList->size() << endl;
                 hostList->erase(it2);
@@ -169,22 +178,53 @@ void handleRegisterRequest(Receiver &receiver, Sender &sender, char buffer[], un
     }
 }
 
+bool rpcArraySizeOkay(const rpcFunctionKey l, const rpcFunctionKey r) {
+    int i = 0;
+    int lArgs = l.argTypes[i];
+    int rArgs = r.argTypes[i];
+
+    while(lArgs!= 0 && rArgs != 0)
+    {
+        int lArraySize = lArgs & 0x1111;
+        int rArraySize = rArgs & 0x1111;
+
+        if (lArraySize > rArraySize)
+        {
+            return false;
+        }
+
+        i++;
+        lArgs = l.argTypes[i];
+        rArgs = r.argTypes[i];
+    }
+
+    if (lArgs != 0 || rArgs != 0) {
+        return false;
+    }
+
+    return true;
+}
+
 server_info *getRoundRobinServer(const rpcFunctionKey &key) {
     if (servicesDictionary.find(key) == servicesDictionary.end()) {
         return NULL;
     }
 
-    list<server_info *> *availServers = servicesDictionary[key];
+    list<service_info *> *availServers = servicesDictionary[key];
 
     server_info *selectedServer = NULL;
     for (list<server_info *>::iterator it = roundRobinQueue.begin(); it != roundRobinQueue.end(); it++) {
         server_info *nextRRServer = (*it);
-        for (list<server_info *>::iterator it2 = availServers->begin(); it2 != availServers->end(); it2++) {
-            server_info *supportingServer = (*it2);
-            if (*nextRRServer == *supportingServer) {
+
+        for (list<service_info *>::iterator it2 = availServers->begin(); it2 != availServers->end(); it2++) {
+            service_info *supportingServer = (*it2);
+            struct rpcFunctionKey *serverKey = supportingServer->functionKey;
+            if (*nextRRServer == *supportingServer && rpcArraySizeOkay(key, *serverKey)) {
                 selectedServer = nextRRServer;
+                break;
             }
         }
+
         if (selectedServer != NULL) {
             // cerr << "front port was: " << roundRobinQueue.front()->port << endl;
             roundRobinQueue.splice(roundRobinQueue.end(), roundRobinQueue, it);

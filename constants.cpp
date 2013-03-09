@@ -5,6 +5,14 @@
 
 using namespace std;
 
+bool operator == (const service_info &l, const service_info &r) {
+    return (l.server_identifier == r.server_identifier && l.port == r.port && (!(*(l.functionKey) < *(r.functionKey)) && !(*(r.functionKey) < *(l.functionKey))));
+}
+
+bool operator == (const server_info &l, const service_info &r) {
+    return (l.server_identifier == r.server_identifier && l.port == r.port);
+}
+
 bool operator == (const server_info &l, const server_info &r) {
     return (l.server_identifier == r.server_identifier && l.port == r.port);
 }
