@@ -12,7 +12,7 @@
 #include "rwbuffer.h"
 using namespace std;
 
-static bool debug = false;
+static bool debug = true;
 static int binderSocketFd = -1;
 
 int connectToBinder() {
@@ -123,8 +123,8 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
             }
             else
             {
-                returnCode = -5;
-                cerr << "WARNING: wrong function name returned"<<endl;
+                returnCode = WRONG_FUNCTION_NAME_RETURNED;
+                cerr << "WARNING: wrong function name returned: " << functionName<<endl;
             }
 
 
