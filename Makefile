@@ -2,6 +2,8 @@ CXX = g++					# compiler
 CXXFLAGS = -g -Wall -Wno-unused-label -MMD -DTYPE="${TYPE}"  # compiler flags
 MAKEFILE_NAME = ${firstword ${MAKEFILE_LIST}}	# makefile name
 
+BLAH = ar rcs librpc.a sender.o receiver.o constants.o helpers.o rwbuffer.o rpcserver.o rpcclient.o
+
 OBJECTS1 = binder.o sender.o helpers.o receiver.o constants.o rwbuffer.o
 EXEC1 = binder				# 1st executable name
 
@@ -29,6 +31,7 @@ EXECS = ${EXEC1} ${EXEC2} ${EXEC3}	${EXEC4} ${EXEC5} ${EXEC6}			# all executable
 .PHONY : all clean
 
 all : ${EXECS}					# build all executables
+	ar rcs librpc.a sender.o receiver.o constants.o helpers.o rwbuffer.o rpcserver.o rpcclient.o
 
 ${EXEC1} : ${OBJECTS1}				# link step 1st executable
 	${CXX} $^ -o $@ -lpthread

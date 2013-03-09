@@ -253,6 +253,7 @@ void handleTerminateRequest() {
         for (list<int>::iterator it = removeList.begin(); it != removeList.end(); it++) {
             removeServer(*it);
         }
+        removeList.clear();
 
         sleep(1);
     }
