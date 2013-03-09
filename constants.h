@@ -27,7 +27,9 @@ enum MessageType
 	EXECUTE = 5,
 	EXECUTE_SUCCESS = 6,
 	EXECUTE_FAILURE = 7,
-	TERMINATE = 8
+    REGISTER_SUCCESS = 8,
+    REGISTER_FAILURE = 9,
+	TERMINATE = 10
 };
 
 enum ReasonCode
@@ -64,7 +66,6 @@ struct rpcFunctionKey
     }
 };
 
-bool operator == (const rpcFunctionKey &l, const rpcFunctionKey &r);
 bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r);
 
 #endif

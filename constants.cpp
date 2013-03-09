@@ -68,7 +68,10 @@ bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r)
         // the one with the smaller value is smaller
         while(lArgs!= 0 && rArgs != 0)
         {
-            if(lArgs != rArgs)
+            int lArraySize = lArgs & 0x1111;
+            int rArraySize = rArgs & 0x1111;
+
+            if (((lArgs & 0xFFFF0000) != (rArgs & 0xFFFF0000)) || (lArraySize == 0 && rArraySize != 0) || (lArraySize != 0 && rArraySize == 0))
             {
                 // cerr << "DIFF : " << "lArgs = " << lArgs << ", " << "rArgs = " << rArgs << endl;
                 return lArgs < rArgs;
