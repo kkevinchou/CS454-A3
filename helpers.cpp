@@ -80,11 +80,6 @@ MessageType getMessageTypeFromInt(int i)
     // }
     // return ret;
 }
-void error(string msg)
-{
-    cerr << msg << endl;
-    exit(-1);
-}
 
 // TODO: shouldn't port be unsigned short?
 
@@ -100,14 +95,14 @@ int setupSocketAndReturnDescriptor(const char * serverAddressString, int serverP
     socketFileDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     if (socketFileDescriptor < 0)
     {
-        return -2;
+        return SOCKET_OPEN_FAILURE;
     }
 
     server = gethostbyname(serverAddressString);
 
     if (server == NULL) {
 
-       return -3;
+       return SOCKET_UNKNOWN_HOST;
 
     }
 
@@ -123,7 +118,7 @@ int setupSocketAndReturnDescriptor(const char * serverAddressString, int serverP
 
     if (connect(socketFileDescriptor,(struct sockaddr *) &serverAddressStruct,sizeof(serverAddressStruct)) < 0)
     {
-        return -4;
+        return SOCKET_CONNECTION_FALIURE;
     }
 
     return socketFileDescriptor;
@@ -138,7 +133,7 @@ int createSocket() {
     return socket(AF_INET, SOCK_STREAM, 0);
 }
 
-void listenOnSocket(int localSocketFd) {
+int listenOnSocket(int localSocketFd) {
     struct sockaddr_in binderAddress;
     memset((struct sockaddr_in *)&binderAddress, 0, sizeof(binderAddress));
 
@@ -147,7 +142,10 @@ void listenOnSocket(int localSocketFd) {
     binderAddress.sin_port = 0;
 
     if (bind(localSocketFd, (struct sockaddr *) &binderAddress, sizeof(binderAddress)) < 0)
-          error("ERROR: Failed to bind local socket");
+    {
+        cerr << "ERROR: Failed to bind on local socket"<<endl;
+        return SOCKET_LOCAL_BIND_FALIURE;
+    }
 
     listen(localSocketFd, 5);
 }
@@ -158,7 +156,11 @@ int acceptConnection(int localSocketFd) {
     int newSocketFd = accept(localSocketFd, (struct sockaddr *) &clientAddress, &clientAddressSize);
 
     if (newSocketFd < 0)
-        error("ERROR: Failed to accept client connection");
+    {
+        cerr<<"ERROR: Failed to accept client connection"<<endl;
+        return SOCKET_ACCEPT_CLIENT_FAILURE;
+    }
+        
 
     return newSocketFd;
 }

@@ -37,15 +37,23 @@ int rpcInit() {
     char * binderAddressString = getenv ("BINDER_ADDRESS");
     char * binderPortString = getenv("BINDER_PORT");
 
-    if(binderAddressString == NULL) error("ERROR: BINDER_ADDRESS environment variable not set.");
-    if(binderPortString == NULL) error("ERROR: BINDER_PORT environment variable not set.");
+    if(binderAddressString == NULL)
+	{
+		cerr << "ERROR: BINDER_ADDRESS environment variable not set."<< endl;
+		return INIT_UNSET_BINDER_ADDRESS;
+	}
+    if(binderPortString == NULL)
+	{
+		cerr << "ERROR: BINDER_PORT environment variable not set."<< endl;
+		return INIT_UNSET_BINDER_PORT;
+	}
 
     cerr << "connecting to : " << binderAddressString << ":" << binderPortString << endl;
     binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
 	signal(SIGPIPE, SIG_IGN);
     if (binderSocketFd < 0) {
-        return binderSocketFd;
+        return INIT_BINDER_SOCKET_FAILURE;
     }
 
     localSocketFd = createSocket();
@@ -53,7 +61,7 @@ int rpcInit() {
     printSettings(localSocketFd);
 
     if (localSocketFd < 0) {
-        return localSocketFd;
+        return INIT_LOCAL_SOCKET_FAILURE;
     }
 
     _threadLock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
@@ -64,9 +72,9 @@ int rpcInit() {
 
 // returns 0 on sucess
 // warnings:
-// 1 - function already added
+// positive returned
 // errors:
-// -1 - binder could not be found
+// negative returned
 int rpcRegister(char *name, int *argTypes, skeleton f) {
 	// calls the binder, informing it that a server procedure
 	// with the indicated name and list of argument types is available at this server.
@@ -77,11 +85,6 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 
 	// The function also makes an entry in a local database,
 	// associating the server skeleton with the name and list of argument types.
-	struct rpcFunctionKey k(string(name), argTypes);
-
-	if(registeredFunctions[k] != NULL) return 1;
-	registeredFunctions[k] = f;
-
 	string hostname = getHostname();
 	unsigned short port = getPort(localSocketFd);
 	string funcName = string(name);
@@ -95,9 +98,61 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	cerr << "funcName : " << funcName.size() << endl;
 	cerr << "argTypesLength : " << argTypesLength << endl;
 
-	s.sendRegisterMessage(hostname, port, funcName, argTypes);
+	int n = s.sendRegisterMessage(hostname, port, funcName, argTypes);
+	if(n < 0) return n;
 
-	cout << "Successfully registered: "<< name << endl;
+	// listen for response
+	Receiver r(binderSocketFd);
+	unsigned int messageSize;
+	n = r.receiveMessageSize(messageSize);
+	if(n < 0) return n;
+
+	MessageType type;
+	n = r.receiveMessageType(type);
+	if(n < 0) return n;
+
+
+
+	if(type == REGISTER_SUCCESS)
+	{
+		cout << "Successfully registered: "<< name << endl;
+		int reasonCode = 0;
+		if(	messageSize > 0)
+		{
+			char buffer[messageSize];
+			n = r.receiveMessageGivenSize(messageSize, buffer);
+			if(n < 0) return n;
+			RWBuffer b;
+			b.extractInt(buffer, reasonCode);
+		}
+
+		struct rpcFunctionKey k(string(name), argTypes);
+		registeredFunctions[k] = f;
+
+		return reasonCode;
+	}
+	else if(type == REGISTER_FAILURE)
+	{
+		int errorCode = 0;
+		cout << "Failure to register: "<< name << endl;
+		if(	messageSize > 0)
+		{
+			char buffer[messageSize];
+			n = r.receiveMessageGivenSize(messageSize, buffer);
+			if(n < 0) return n;
+						RWBuffer b;
+			b.extractInt(buffer, errorCode);
+		}
+
+		return errorCode;
+	}
+	else
+	{
+		cerr << "Unknown message type received when expecting REGISTER reply." << endl;
+		return RECEIVE_INVALID_MESSAGE_TYPE;
+	}
+
+	
 
 	return 0;
 }
@@ -160,7 +215,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 
 	if(skel == NULL){ 
 		// error, function not found. send fail message
-		failCode = -1;
+		failCode = EXECUTE_UNKNOWN_SKELETON;
 	}
 	else
 	{
@@ -198,7 +253,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		}
 	}
 
-	if(failCode < 0)
+	if(failCode != 0)
 	{
 		// send fail message
 		char failureCodeMessage[4];
@@ -296,7 +351,7 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
     }
 
     if (!success) {
-    	cout << "Client socket closed "<<endl;
+    	cout << "Client socket closed "<<clientSocketFd<<endl;
         chunkInfo[clientSocketFd] = 0;
         FD_CLR(clientSocketFd, master_set);
         close(clientSocketFd);
@@ -313,7 +368,7 @@ int rpcExecute()
     FD_ZERO(&master_set);
     FD_SET(localSocketFd, &master_set);
     FD_SET(binderSocketFd, &master_set);
-
+cout<< "Binder socket: "<< binderSocketFd << endl;
     map<int, unsigned int> chunkInfo;
 
     while (!willTerminate) {
@@ -323,9 +378,11 @@ int rpcExecute()
 	        int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
 
 	        if (selectResult < 0) {
-	            error("ERROR: Select failed");
+	            cerr << "ERROR: Select failed" << endl;
+	            return SELECT_FAILED;
 	        } else if (selectResult == 0) {
-	            error("ERROR: Select timed out");
+	            cerr<<"ERROR: Select timed out"<< endl;
+	            return SELECT_TIMED_OUT;
 	        }
 
 	        for (int i = 0; i < max_fd + 1; i++) {

@@ -72,12 +72,12 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
         if(n == 0)
         {
             cerr << "Connection closed"<<endl;
-            return -1; //connection closed!
+            return SOCKET_CONNECTION_FALIURE; //connection closed!
         }
         else if (n < 0)
         {
             cerr << "ERROR reading from socket"<<endl;
-            return -2;
+            return SOCKET_RECEIVE_FAILURE;
         }
          bufferPointer += n;
          sizeLeft -= n;

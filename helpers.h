@@ -23,7 +23,7 @@ int createSocket();
 
 unsigned int sizeOfType(int type);
 
-void listenOnSocket(int localSocketFd);
+int listenOnSocket(int localSocketFd);
 int acceptConnection(int localSocketFd);
 MessageType getMessageTypeFromInt(int i);
 unsigned short getPort(int localSocketFd);

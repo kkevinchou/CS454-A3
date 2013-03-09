@@ -19,14 +19,21 @@ int connectToBinder() {
     char * binderAddressString = getenv ("BINDER_ADDRESS");
     char * binderPortString = getenv("BINDER_PORT");
 
-    if(binderAddressString == NULL) error("ERROR: BINDER_ADDRESS environment variable not set.");
-    if(binderPortString == NULL) error("ERROR: BINDER_PORT environment variable not set.");
-
+    if(binderAddressString == NULL)
+    {
+        cerr << "ERROR: BINDER_ADDRESS environment variable not set."<< endl;
+        return INIT_UNSET_BINDER_ADDRESS;
+    }
+    if(binderPortString == NULL)
+    {
+        cerr << "ERROR: BINDER_PORT environment variable not set." << endl;
+        return INIT_UNSET_BINDER_PORT;
+    }
     cerr << "connecting to : " << binderAddressString << ":" << binderPortString << endl;
     binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
     if (binderSocketFd < 0) {
-        return binderSocketFd;
+        return INIT_BINDER_SOCKET_FAILURE;
     }
 
     return 0;
@@ -128,7 +135,7 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
         break;
         default:
             cerr << "WARNING: Server returned an invalid response to remote prodcure call."<<endl;
-            returnCode = -10;
+            returnCode = RECEIVE_INVALID_MESSAGE_TYPE;
         break;
     }
 

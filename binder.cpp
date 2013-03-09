@@ -327,7 +327,8 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
 int main(int argc, char *argv[]) {
     int localSocketFd = createSocket();
     if (localSocketFd < 0) {
-        error("ERROR: Failed to open socket");
+        cerr << "ERROR: Failed to open socket" << endl;
+        return SOCKET_OPEN_FAILURE;
     }
 
     signal(SIGPIPE, SIG_IGN);
@@ -345,9 +346,11 @@ int main(int argc, char *argv[]) {
         int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
 
         if (selectResult < 0) {
-            error("ERROR: Select failed");
+            cerr << "ERROR: Select failed" << endl;
+            return SELECT_FAILED;
         } else if (selectResult == 0) {
-            error("ERROR: Select timed out");
+            cerr<<"ERROR: Select timed out"<< endl;
+            return SELECT_TIMED_OUT;
         }
 
         for (int i = 0; i < max_fd + 1; i++) {

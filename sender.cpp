@@ -38,13 +38,12 @@ int Sender::sendArray(unsigned int length, char data[])
 		}
 		else if(n<0)
 		{
-			return -1;
+			cerr << "ERROR: send returned an error"<< endl;
+			return n;
 		}
 
 		sentSize -= n;
 		bytesPtr += n;
-
-		sleep(2);
 	}
 
 	return sentSize;
@@ -86,8 +85,7 @@ int Sender::sendMessage(unsigned int messageSize, MessageType msgType, char mess
  		buffer[i + 8] = message[i];
  	}
 
- 	sendArray(messageSize + 8, buffer);
- 	return 0;
+ 	return sendArray(messageSize + 8, buffer);
 }
 
 Sender::Sender(int socketFileDescriptor)
@@ -123,9 +121,7 @@ int Sender::sendRegisterMessage(string serverID, unsigned short port, string nam
  	bufferP = b.insertStringToBuffer(name, bufferP);
  	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
 
- 	sendMessage(messageSize, REGISTER, buffer);
-
- 	return 0;
+ 	return sendMessage(messageSize, REGISTER, buffer);
 }
 
 int Sender::sendRegisterSuccessMessage(ReasonCode code) {
@@ -138,9 +134,7 @@ int Sender::sendRegisterSuccessMessage(ReasonCode code) {
 	RWBuffer b;
 	bufferP = b.insertIntToBuffer(static_cast<int>(code), bufferP);
 
- 	sendMessage(messageSize, REGISTER_SUCCESS, buffer);
-
- 	return 0;
+ 	return sendMessage(messageSize, REGISTER_SUCCESS, buffer);
 }
 
 int Sender::sendRegisterFailureMessage(ReasonCode code) {
@@ -153,9 +147,7 @@ int Sender::sendRegisterFailureMessage(ReasonCode code) {
 	RWBuffer b;
 	bufferP = b.insertIntToBuffer(static_cast<int>(code), bufferP);
 
- 	sendMessage(messageSize, REGISTER_FAILURE, buffer);
-
- 	return 0;
+ 	return sendMessage(messageSize, REGISTER_FAILURE, buffer);
 }
 
 int Sender::sendLocRequestMessage(string name, int argTypes[]) {
@@ -171,9 +163,7 @@ int Sender::sendLocRequestMessage(string name, int argTypes[]) {
 	bufferP = b.insertStringToBuffer(name, bufferP);
  	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
 
- 	sendMessage(messageSize, LOC_REQUEST, buffer);
-
- 	return 0;
+ 	return sendMessage(messageSize, LOC_REQUEST, buffer);
 }
 
 int Sender::sendLocSuccessMessage(string serverID, unsigned short port) {
@@ -188,9 +178,8 @@ int Sender::sendLocSuccessMessage(string serverID, unsigned short port) {
 	bufferP = b.insertStringToBuffer(serverID, bufferP);
  	bufferP = b.insertShortToBuffer(port, bufferP);
 
- 	sendMessage(messageSize, LOC_SUCCESS, buffer);
+ 	return sendMessage(messageSize, LOC_SUCCESS, buffer);
 
- 	return 0;
 }
 
 int Sender::sendLocFailureMessage(ReasonCode reasonCode) {
@@ -203,7 +192,5 @@ int Sender::sendLocFailureMessage(ReasonCode reasonCode) {
 	RWBuffer b;
 	bufferP = b.insertIntToBuffer(static_cast<int>(reasonCode), bufferP);
 
- 	sendMessage(messageSize, LOC_FAILURE, buffer);
-
- 	return 0;
+ 	return sendMessage(messageSize, LOC_FAILURE, buffer);
 }
