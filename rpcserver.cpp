@@ -177,8 +177,8 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 	if(failCode < 0)
 	{
 		// send fail message
-		char failureCodeMessage[1];
-		failureCodeMessage[0] = -1;
+		char failureCodeMessage[4];
+		b.insertIntToBuffer(failCode, failureCodeMessage);
 		int r = s.sendMessage(4, EXECUTE_FAILURE, failureCodeMessage);
 		if(r != 0) cerr << "WARNING: Send EXECUTE_FAILURE message failed."<<endl;
 	}
@@ -299,11 +299,8 @@ int rpcExecute()
                     if(requestCode < 0)
                     {
                     	// received a termination signal from binder
-                    	// break out of the execute loop and return -1
-                    	// to indicate shut down
-                    	close(localSocketFd);
-                    	close(binderSocketFd);
-                    	return requestCode;
+                    	// break out of the execute loop
+                    	break;
                     }
                 } else {
                     cout << "accept connection"<<endl;
@@ -314,7 +311,7 @@ int rpcExecute()
             }
         }
     }
-
+    close(binderSocketFd);
     close(localSocketFd);
 	return 0;
 }
