@@ -8,7 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <iostream>
+ using namespace std;
 #include "rpc.h"
 
 #define CHAR_ARRAY_LENGTH 100
@@ -161,7 +162,8 @@ int main() {
   printf("\ndo you want to terminate? y/n: ");
   if (getchar() == 'y')
     rpcTerminate();
-
+int n;
+  cin >>n;
   /* end of client.c */
   return 0;
 }

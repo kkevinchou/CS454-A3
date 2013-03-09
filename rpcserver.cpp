@@ -15,15 +15,23 @@
 #include <netinet/in.h>
 #include "rwbuffer.h"
 #include "helpers.h"
-
+#include <map>
 #include <pthread.h>
 
 using namespace std;
 static bool debug = true;
 static int localSocketFd;
 static int binderSocketFd;
-
+static pthread_mutex_t * _threadLock;
+static map<pthread_t, bool> _runningThreads;
+static bool shouldTerminate = false;
+static bool willTerminate = false;
 static map<rpcFunctionKey, skeleton> registeredFunctions;
+
+/*bool operator > (const pthread_t& left, const pthread_t& right)
+{
+return left.p > right.p;
+}*/
 
 int rpcInit() {
     char * binderAddressString = getenv ("BINDER_ADDRESS");
@@ -47,6 +55,9 @@ int rpcInit() {
     if (localSocketFd < 0) {
         return localSocketFd;
     }
+
+    _threadLock = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+	 pthread_mutex_init(_threadLock, NULL);
 
     return 0;
 }
@@ -90,7 +101,20 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 
 	return 0;
 }
-
+void removeThreadFromList(pthread_t key)
+{
+	if(_threadLock)
+	{
+		pthread_mutex_lock(_threadLock);
+		_runningThreads.erase(key);
+		if(_runningThreads.size() == 0 && shouldTerminate) 
+		{
+			willTerminate = true;
+		}
+		pthread_mutex_unlock(_threadLock);
+	}
+	// else no lock? Don't do anything. Unsafe.
+}
 void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messageSize)
 {
 	
@@ -203,6 +227,10 @@ void * handleExecuteMessageThreadFunction(void * args)
 	delete messageSize;
 	delete [] buffer;
 	// thread finishes
+
+	removeThreadFromList(pthread_self());
+
+	return NULL;
 }
 int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int> &chunkInfo) {
 	Receiver receiver(clientSocketFd);
@@ -214,7 +242,6 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
      //   cout << "nb" << nb << " " << numBytes<<endl;
     if(receiver.receiveMessageSize(messageSize) == 0 )
     {
-        // TODO : HANDLE TERMINATE
         MessageType type;
         if(receiver.receiveMessageType(type) == 0)
         {
@@ -242,7 +269,7 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 
 		        	pthread_t sendingThread ;
     				pthread_create(&sendingThread, NULL, &handleExecuteMessageThreadFunction, (void *)threadArguments);
-
+    				_runningThreads[sendingThread] = true;
 		           	//handleExecuteMessage(clientSocketFd,buffer, messageSize);
 
 
@@ -252,12 +279,16 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 		    else if(binderSocketFd == clientSocketFd && type == TERMINATE)
 		    {
 		    	// we received a terminate message from the binder, so we kill ourself
+		    	cout << "Terminate message received from binder"<<endl;
 		    	return -1;
 		    }
-        }
+        }else cout << "B"<<endl;
 
        
 
+    }
+    else {
+    	cout << "A"<<endl;
     }
 
     if (!success) {
@@ -281,37 +312,48 @@ int rpcExecute()
 
     map<int, unsigned int> chunkInfo;
 
-    while (true) {
-        memcpy(&working_set, &master_set, sizeof(master_set));
-        int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
+    while (!willTerminate) {
+    	if(!shouldTerminate)
+    	{
+    		 memcpy(&working_set, &master_set, sizeof(master_set));
+	        int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
 
-        if (selectResult < 0) {
-            error("ERROR: Select failed");
-        } else if (selectResult == 0) {
-            error("ERROR: Select timed out");
-        }
+	        if (selectResult < 0) {
+	            error("ERROR: Select failed");
+	        } else if (selectResult == 0) {
+	            error("ERROR: Select timed out");
+	        }
 
-        for (int i = 0; i < max_fd + 1; i++) {
-            if (FD_ISSET(i, &working_set)) {
-                if (i != localSocketFd) {
-                    int clientSocketFd = i;
-                    int requestCode = handleRequest(clientSocketFd, &master_set, chunkInfo);
-                    if(requestCode < 0)
-                    {
-                    	// received a termination signal from binder
-                    	// break out of the execute loop
-                    	break;
-                    }
-                } else {
-                    cout << "accept connection"<<endl;
-                    int newSocketFd = acceptConnection(localSocketFd);
-                    if(newSocketFd > max_fd) max_fd = newSocketFd;
-                    FD_SET(newSocketFd, &master_set);
-                }
-            }
-        }
+	        for (int i = 0; i < max_fd + 1; i++) {
+	            if (FD_ISSET(i, &working_set)) {
+	                if (i != localSocketFd) {
+	                    int clientSocketFd = i;
+	                    int requestCode = handleRequest(clientSocketFd, &master_set, chunkInfo);
+	                    if(requestCode < 0)
+	                    {
+	                    	// received a termination signal from binder
+	                    	// break out of the execute loop
+	                    	cout << "Should terminate server after all threads are done" << endl;
+	                    	shouldTerminate = true;
+	                    	if(_runningThreads.size() == 0) willTerminate = true;
+	                    	break;
+
+	                    }
+	                } else {
+	                    cout << "accept connection"<<endl;
+	                    int newSocketFd = acceptConnection(localSocketFd);
+	                    if(newSocketFd > max_fd) max_fd = newSocketFd;
+	                    FD_SET(newSocketFd, &master_set);
+	                }
+	            }
+	        }
+    	}
+       
     }
     close(binderSocketFd);
     close(localSocketFd);
+
+    pthread_mutex_destroy(_threadLock);
+	free(_threadLock);
 	return 0;
 }

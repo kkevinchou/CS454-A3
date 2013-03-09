@@ -7,7 +7,7 @@
 #include <string.h>
 #include "constants.h"
 #include "rwbuffer.h"
-static bool debug = false;
+static bool debug = true;
 using namespace std;
 
 int Sender::sendArray(unsigned int length, char data[])
@@ -100,6 +100,7 @@ Sender::Sender(int socketFileDescriptor)
 *****************************************************/
 
 int Sender::sendTerminateMessage() {
+	 cout << "Send terminate"<<endl;
  	sendMessage(0, TERMINATE, NULL);
  	return 0;
 }
