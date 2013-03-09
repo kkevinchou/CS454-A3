@@ -188,7 +188,7 @@ int rpcCall(char* name, int* argTypes, void** args) {
     int locRequestCode = sendLocRequest(string(name), argTypes);
 
     if(locRequestCode < 0) return locRequestCode;
-    
+
     string serverID;
     unsigned short port;
     int locCode = processLocResponse(serverID, port);
