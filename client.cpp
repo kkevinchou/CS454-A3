@@ -88,13 +88,6 @@ int main()
   args3[0] = (void *)a3;
 
   /* prepare the arguments for f3 */
-  
-
-  argTypes3[0] = (1 << ARG_OUTPUT) | (1 << ARG_INPUT) | (ARG_LONG << 16) | 15;
-  argTypes3[1] = 0;
-
-  args3 = (void **)malloc(count3 * sizeof(void *));
-  args3[0] = (void *)a3;
 
  long a4 = 10;
   int count4 = 1;

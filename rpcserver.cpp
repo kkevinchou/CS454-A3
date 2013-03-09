@@ -249,7 +249,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		        cout << endl;
 		    }
 		    int r = s.sendMessage(messageSize, EXECUTE_SUCCESS, returnMessage);
-		    if(r != 0) cerr << "WARNING: Send EXECUTE_SUCESS message failed"<<endl;
+		    if(r != 0) cerr << "WARNING: Send EXECUTE_SUCESS message failed: "<<r <<endl;
 		}
 		else
 		{

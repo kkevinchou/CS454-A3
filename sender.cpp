@@ -7,6 +7,7 @@
 #include <string.h>
 #include "constants.h"
 #include "rwbuffer.h"
+#include <cerrno>
 static bool debug = false;
 using namespace std;
 
@@ -38,7 +39,7 @@ int Sender::sendArray(unsigned int length, char data[])
 		}
 		else if(n<0)
 		{
-			cerr << "ERROR: send returned an error"<< endl;
+			cerr << "ERROR: send returned an error "<<errno<< endl;
 			return n;
 		}
 

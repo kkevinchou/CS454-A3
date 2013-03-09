@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   /*
    * f3 takes an array of long.
   */
-  argTypes3[0] = (1 << ARG_OUTPUT) | (1 << ARG_INPUT) | (ARG_LONG << 16) | 11;
+  argTypes3[0] = (1 << ARG_OUTPUT) | (1 << ARG_INPUT) | (ARG_LONG << 16) | 20;
   argTypes3[1] = 0;
 
   /* same here, 28 is the exact length of the parameter */
