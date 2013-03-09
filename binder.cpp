@@ -122,6 +122,7 @@ void handleRegisterRequest(Receiver &receiver, Sender &sender, char buffer[], un
     } catch (int e) {
         failed = true;
         r = FAILURE;
+        removeServer(serverFd);
     }
 
     if (!failed) {
