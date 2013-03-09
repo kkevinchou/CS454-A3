@@ -95,28 +95,28 @@ void registerServer(string serverID, unsigned short port, int serverFd) {
 }
 
 void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int bufferSize, int serverFd) {
-    string serverID;
-    unsigned short port;
-    string name;
-    RWBuffer b;
-
-    char * bufferPointer = buffer;
-    bufferPointer = b.extractString(bufferPointer, serverID);
-    bufferPointer = b.extractUnsignedShort(bufferPointer, port);
-    bufferPointer = b.extractString(bufferPointer, name);
-
-    unsigned int serverIDSize = serverID.size() + 1;
-    unsigned int portSize = 2;
-    unsigned int nameSize = name.size() + 1;
-    unsigned int argTypesLength = (bufferSize - serverIDSize - portSize - nameSize) / 4;
-
-    int argTypes[argTypesLength];
-    b.extractArgTypes(bufferPointer, argTypes);
-
+    bool failed = false;
     ReasonCode r = SUCCESS;
 
-    bool failed = false;
     try {
+        string serverID;
+        unsigned short port;
+        string name;
+        RWBuffer b;
+
+        char * bufferPointer = buffer;
+        bufferPointer = b.extractString(bufferPointer, serverID);
+        bufferPointer = b.extractUnsignedShort(bufferPointer, port);
+        bufferPointer = b.extractString(bufferPointer, name);
+
+        unsigned int serverIDSize = serverID.size() + 1;
+        unsigned int portSize = 2;
+        unsigned int nameSize = name.size() + 1;
+        unsigned int argTypesLength = (bufferSize - serverIDSize - portSize - nameSize) / 4;
+
+        int argTypes[argTypesLength];
+        b.extractArgTypes(bufferPointer, argTypes);
+
         registerServer(serverID, port, serverFd);
         r = addService(name, argTypes, serverID, port);
     } catch (int e) {
@@ -160,29 +160,33 @@ server_info *getRoundRobinServer(const rpcFunctionKey &key) {
 }
 
 void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize) {
-    string name;
-    RWBuffer b;
-    char * bufferPointer = buffer;
-    bufferPointer = b.extractString(bufferPointer, name);
+    try {
+        string name;
+        RWBuffer b;
+        char * bufferPointer = buffer;
+        bufferPointer = b.extractString(bufferPointer, name);
 
-    unsigned int nameSize = name.size() + 1;
+        unsigned int nameSize = name.size() + 1;
 
-    unsigned int argTypesLength = (bufferSize - nameSize) / 4;
-    int argTypes[argTypesLength];
-    b.extractArgTypes(bufferPointer, argTypes);
+        unsigned int argTypesLength = (bufferSize - nameSize) / 4;
+        int argTypes[argTypesLength];
+        b.extractArgTypes(bufferPointer, argTypes);
 
-    rpcFunctionKey key(name, argTypes);
+        rpcFunctionKey key(name, argTypes);
 
-    server_info *location = getRoundRobinServer(key);
+        server_info *location = getRoundRobinServer(key);
 
-    if (location != NULL) {
-        cerr << "LOC REQ FOUND!" << endl;
-        cerr << "server_identifier = " << location->server_identifier << endl;
-        cerr << "port = " << location->port << endl;
-        sender.sendLocSuccessMessage(location->server_identifier, location->port);
-    } else {
-        cerr << "LOC REQ NOT FOUND!" << endl;
-        sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
+        if (location != NULL) {
+            cerr << "LOC REQ FOUND!" << endl;
+            cerr << "server_identifier = " << location->server_identifier << endl;
+            cerr << "port = " << location->port << endl;
+            sender.sendLocSuccessMessage(location->server_identifier, location->port);
+        } else {
+            cerr << "LOC REQ NOT FOUND!" << endl;
+            sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
+        }
+    } catch (int e) {
+        sender.sendLocFailureMessage(FAILURE);
     }
 }
 
