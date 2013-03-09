@@ -12,7 +12,7 @@
 #include "rwbuffer.h"
 using namespace std;
 
-static bool debug = true;
+static bool debug = false;
 static int binderSocketFd = -1;
 
 int connectToBinder() {
@@ -77,11 +77,11 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
     if(debug)
     {
         cout << "Sending an EXECUTE message of size "<<messageSize << ": "<<endl;
-        for(unsigned int i = 0; i < messageSize; i++)
+       /* for(unsigned int i = 0; i < messageSize; i++)
         {
             cout << (int)message[i] << " ";
 
-        }
+        }*/
         cout << endl;
     }
 
@@ -166,11 +166,16 @@ int processLocResponse(string &serverID, unsigned short &port) {
         return 0;
     } else if (msgType == LOC_FAILURE) {
         cerr << "FAILURE" << endl;
-        // TODO: We don't do anything with the reason code for now...
-        return -1;
+        int reasonCode = 0;
+        if(messageSize > 0)
+        {
+
+            b.extractInt(buffer, reasonCode);
+        }
+        return reasonCode;
     } else {
         cerr << "UNEXPECTED MSGTYPE IN processLocResponse()" << endl;
-        return -1;
+        return RECEIVE_INVALID_MESSAGE_TYPE;
     }
 }
 
@@ -182,12 +187,12 @@ int rpcCall(char* name, int* argTypes, void** args) {
     unsigned short port;
     int locCode = processLocResponse(serverID, port);
 
-    if (locCode == -1) {
+    if (locCode < 0) {
         return locCode;
     }
 
-    cerr << "SERVER : " << serverID << endl;
-    cerr << "PORT : " << port << endl;
+  //  cerr << "SERVER : " << serverID << endl;
+  //  cerr << "PORT : " << port << endl;
     // char * binderAddressString = getenv ("BINDER_ADDRESS");
     // char * binderPortString = getenv("BINDER_PORT");
     int serverSocketFd = setupSocketAndReturnDescriptor(serverID.c_str(), port);

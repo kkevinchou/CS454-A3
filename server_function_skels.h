@@ -9,3 +9,4 @@ int f1_Skel(int* a, void** b);
 int f2_Skel(int* a, void** b);
 int f3_Skel(int* a, void** b);
 int f4_Skel(int* a, void** b);
+int f3b_Skel(int *a, void **b);

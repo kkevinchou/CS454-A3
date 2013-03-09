@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <iostream>
+using namespace std;
 /* return: OUT; a, b: IN */
 int f0(int a, int b) {
 
@@ -60,6 +61,10 @@ void f3(long a[]) {
       }
     }
   }
+}
+void f3(long a) {
+
+    cout << "Called f3b" << endl;
 }
 
 /*

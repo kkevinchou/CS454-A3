@@ -32,6 +32,12 @@ int f3_Skel(int *argTypes, void **args) {
   return 0;
 }
 
+int f3b_Skel(int *argTypes, void **args) {
+
+  f3(*((long *)(*args)));
+  return 0;
+}
+
 /* 
  * this skeleton doesn't do anything except returns
  * a negative value to mimic an error during the 

@@ -7,7 +7,7 @@
 #include <string.h>
 #include "constants.h"
 #include "rwbuffer.h"
-static bool debug = true;
+static bool debug = false;
 using namespace std;
 
 int Sender::sendArray(unsigned int length, char data[])

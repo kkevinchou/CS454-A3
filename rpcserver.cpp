@@ -94,9 +94,9 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	int argTypesLength = 0;
 	while (argTypes[argTypesLength++]);
 
-	cerr << "hostname : " << hostname.size() << endl;
-	cerr << "funcName : " << funcName.size() << endl;
-	cerr << "argTypesLength : " << argTypesLength << endl;
+	//cerr << "hostname : " << hostname.size() << endl;
+	//cerr << "funcName : " << funcName.size() << endl;
+	//cerr << "argTypesLength : " << argTypesLength << endl;
 
 	int n = s.sendRegisterMessage(hostname, port, funcName, argTypes);
 	if(n < 0) return n;
@@ -177,10 +177,10 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		cout << endl;
 		cout << "Received an EXECUTE message of size "<<messageSize<<": "<<endl;
 	}
-	for(unsigned int i = 0; i < messageSize; i++)
+	/*for(unsigned int i = 0; i < messageSize; i++)
 	{
 		cout << (int)message[i]<<" ";
-	}
+	}*/
 	cout << endl;
 	RWBuffer b;
 	
@@ -236,11 +236,11 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		    if(debug)
 		    {
 		        cout << "Sending an EXECUTE_SUCCESS message of size "<<messageSize << ": "<<endl;
-		        for(unsigned int i = 0; i < messageSize; i++)
+		       /* for(unsigned int i = 0; i < messageSize; i++)
 		        {
 		            cout << (int)returnMessage[i] << " ";
 
-		        }
+		        }*/
 		        cout << endl;
 		    }
 		    int r = s.sendMessage(messageSize, EXECUTE_SUCCESS, returnMessage);
@@ -368,7 +368,7 @@ int rpcExecute()
     FD_ZERO(&master_set);
     FD_SET(localSocketFd, &master_set);
     FD_SET(binderSocketFd, &master_set);
-cout<< "Binder socket: "<< binderSocketFd << endl;
+//cout<< "Binder socket: "<< binderSocketFd << endl;
     map<int, unsigned int> chunkInfo;
 
     while (!willTerminate) {
@@ -395,14 +395,14 @@ cout<< "Binder socket: "<< binderSocketFd << endl;
 	                    {
 	                    	// received a termination signal from binder
 	                    	// break out of the execute loop
-	                    	cout << "Should terminate server after all threads are done" << endl;
+	                    	//cout << "Should terminate server after all threads are done" << endl;
 	                    	shouldTerminate = true;
 	                    	if(_runningThreads.size() == 0) willTerminate = true;
 	                    	break;
 
 	                    }
 	                } else {
-	                    cout << "accept connection"<<endl;
+	                    //cout << "accept connection"<<endl;
 	                    int newSocketFd = acceptConnection(localSocketFd);
 	                    if(newSocketFd > max_fd) max_fd = newSocketFd;
 	                    FD_SET(newSocketFd, &master_set);
