@@ -29,8 +29,7 @@ static map<int, server_info *> fdToServerMap;
 static map<int, unsigned int> chunkInfo;
 static map<int, MessageType> msgInfo;
 
-static bool terminating = false;
-
+static bool terminating;
 extern bool debug;
 
 void addService(string name, int argTypes[], string serverID, unsigned short port) {
@@ -168,16 +167,6 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
     }
 }
 
-void handleTerminateRequest() {
-    terminating = true;
-
-    for (map<int, server_info *>::iterator it = fdToServerMap.begin(); it != fdToServerMap.end(); it++) {
-        int serverFd = it->first;
-        Sender s(serverFd);
-        s.sendTerminateMessage();
-    }
-}
-
 void removeServer(int serverFd) {
     if (fdToServerMap.find(serverFd) == fdToServerMap.end()) {
         return;
@@ -191,7 +180,9 @@ void removeServer(int serverFd) {
 
     // cerr << "fdToServerMap before size = " << fdToServerMap.size() << endl;
     map<int, server_info *>::iterator it = fdToServerMap.find(serverFd);
-    fdToServerMap.erase(it);
+    if (it != fdToServerMap.end()) {
+        fdToServerMap.erase(it);
+    }
     // cerr << "fdToServerMap after size = " << fdToServerMap.size() << endl;
 
     for (map<rpcFunctionKey, list<server_info *> * >::iterator it = servicesDictionary.begin(); it != servicesDictionary.end(); it++) {
@@ -204,12 +195,48 @@ void removeServer(int serverFd) {
                 break;
             }
         }
+        // TODO : Clean up the memory for the key when the host list is empty?
     }
 
     delete server;
 
     chunkInfo[serverFd] = 0;
     msgInfo[serverFd] = ERROR;
+}
+
+void handleTerminateRequest() {
+    terminating = true;
+
+    for (map<int, server_info *>::iterator it = fdToServerMap.begin(); it != fdToServerMap.end(); it++) {
+        int serverFd = it->first;
+        Sender s(serverFd);
+        s.sendTerminateMessage();
+    }
+
+    list<int> removeList;
+    while (fdToServerMap.size() > 0) {
+        cerr << "Waiting on " << fdToServerMap.size() << " server(s) to terminate" << endl;
+        for (map<int, server_info *>::iterator it = fdToServerMap.begin(); it != fdToServerMap.end(); it++) {
+            int serverFd = it->first;
+            server_info *server = it->second;
+
+            int socketFd = setupSocketAndReturnDescriptor(server->server_identifier.c_str(), server->port);
+
+            if (socketFd < 0) {
+                removeList.push_back(serverFd);
+            }
+        }
+
+        for (list<int>::iterator it = removeList.begin(); it != removeList.end(); it++) {
+            removeServer(*it);
+        }
+
+        sleep(1);
+    }
+
+    cerr << "All servers have terminated" << endl;
+
+    // TODO: clean up memory
 }
 
 void handleRequest(int clientSocketFd, fd_set *master_set) {
@@ -289,7 +316,8 @@ int main(int argc, char *argv[]) {
     FD_ZERO(&master_set);
     FD_SET(localSocketFd, &master_set);
 
-    while (true) {
+    terminating = false;
+    while (!terminating) {
         memcpy(&working_set, &master_set, sizeof(master_set));
         int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
 
@@ -303,8 +331,10 @@ int main(int argc, char *argv[]) {
             if (FD_ISSET(i, &working_set)) {
                 if (i != localSocketFd) {
                     int clientSocketFd = i;
-                    if (!terminating) {
-                        handleRequest(clientSocketFd, &master_set);
+                    handleRequest(clientSocketFd, &master_set);
+
+                    if (terminating) {
+                        break;
                     }
                 } else {
                     int newSocketFd = acceptConnection(localSocketFd);

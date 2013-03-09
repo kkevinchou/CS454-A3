@@ -85,6 +85,9 @@ void error(string msg)
     cerr << msg << endl;
     exit(-1);
 }
+
+// TODO: shouldn't port be unsigned short?
+
 int setupSocketAndReturnDescriptor(const char * serverAddressString, int serverPort)
 {
         int socketFileDescriptor;
