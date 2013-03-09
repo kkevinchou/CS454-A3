@@ -94,6 +94,43 @@ void registerServer(string serverID, unsigned short port, int serverFd) {
     }
 }
 
+void removeServer(int serverFd) {
+    if (fdToServerMap.find(serverFd) == fdToServerMap.end()) {
+        return;
+    }
+
+    server_info *server = fdToServerMap[serverFd];
+
+    // cerr << "roundRobinQueue before size = " << roundRobinQueue.size() << endl;
+    roundRobinQueue.remove(server);
+    // cerr << "roundRobinQueue after size = " << roundRobinQueue.size() << endl;
+
+    // cerr << "fdToServerMap before size = " << fdToServerMap.size() << endl;
+    map<int, server_info *>::iterator it = fdToServerMap.find(serverFd);
+    if (it != fdToServerMap.end()) {
+        fdToServerMap.erase(it);
+    }
+    // cerr << "fdToServerMap after size = " << fdToServerMap.size() << endl;
+
+    for (map<rpcFunctionKey, list<server_info *> * >::iterator it = servicesDictionary.begin(); it != servicesDictionary.end(); it++) {
+        list<server_info *> *hostList = it->second;
+        for (list<server_info *>::iterator it2 = hostList->begin(); it2 != hostList->end(); it2++) {
+            if (*server == *(*it2)) {
+                // cerr << "hostList before size = " << hostList->size() << endl;
+                hostList->erase(it2);
+                // cerr << "hostList after size = " << hostList->size() << endl;
+                break;
+            }
+        }
+        // TODO : Clean up the memory for the key when the host list is empty?
+    }
+
+    delete server;
+
+    chunkInfo[serverFd] = 0;
+    msgInfo[serverFd] = ERROR;
+}
+
 void handleRegisterRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize, int serverFd) {
     bool failed = false;
     ReasonCode r = SUCCESS;
@@ -188,43 +225,6 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
     } catch (int e) {
         sender.sendLocFailureMessage(FAILURE);
     }
-}
-
-void removeServer(int serverFd) {
-    if (fdToServerMap.find(serverFd) == fdToServerMap.end()) {
-        return;
-    }
-
-    server_info *server = fdToServerMap[serverFd];
-
-    // cerr << "roundRobinQueue before size = " << roundRobinQueue.size() << endl;
-    roundRobinQueue.remove(server);
-    // cerr << "roundRobinQueue after size = " << roundRobinQueue.size() << endl;
-
-    // cerr << "fdToServerMap before size = " << fdToServerMap.size() << endl;
-    map<int, server_info *>::iterator it = fdToServerMap.find(serverFd);
-    if (it != fdToServerMap.end()) {
-        fdToServerMap.erase(it);
-    }
-    // cerr << "fdToServerMap after size = " << fdToServerMap.size() << endl;
-
-    for (map<rpcFunctionKey, list<server_info *> * >::iterator it = servicesDictionary.begin(); it != servicesDictionary.end(); it++) {
-        list<server_info *> *hostList = it->second;
-        for (list<server_info *>::iterator it2 = hostList->begin(); it2 != hostList->end(); it2++) {
-            if (*server == *(*it2)) {
-                // cerr << "hostList before size = " << hostList->size() << endl;
-                hostList->erase(it2);
-                // cerr << "hostList after size = " << hostList->size() << endl;
-                break;
-            }
-        }
-        // TODO : Clean up the memory for the key when the host list is empty?
-    }
-
-    delete server;
-
-    chunkInfo[serverFd] = 0;
-    msgInfo[serverFd] = ERROR;
 }
 
 void handleTerminateRequest() {
