@@ -34,10 +34,12 @@ enum MessageType
 
 enum ReasonCode
 {
+
     SUCCESS = 0,
-    FAILURE = 1,
+    FAILURE = -1,
     FUNCTION_OVERRIDDEN = 2,
-    FUNCTION_NOT_AVAILABLE = 3
+    FUNCTION_NOT_AVAILABLE = -2
+
 };
 
 struct server_info {
