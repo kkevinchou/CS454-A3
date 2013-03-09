@@ -228,6 +228,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
             if(receiver.receiveMessageType(msgType) == 0)
             {
                 msgInfo[clientSocketFd] = msgType;
+                cerr << "A Message Type " << msgType << endl;
                 if (msgType == TERMINATE) {
                     handleTerminateRequest();
                 }
@@ -249,10 +250,14 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
             chunkInfo[clientSocketFd] = 0;
             MessageType msgType = msgInfo[clientSocketFd];
 
+            cerr << "B Message Type " << msgType << endl;
+
             if (msgType == REGISTER) {
                 handleRegisterRequest(receiver, buffer, size, clientSocketFd);
             } else if (msgType == LOC_REQUEST) {
                 handleLocRequest(receiver, sender, buffer, size);
+            } else if (msgType == TERMINATE) {
+                handleTerminateRequest();
             } else {
                 cerr << "[BINDER] UNHANDLED MESSAGE TYPE: " << static_cast<int>(msgType) << endl;
             }

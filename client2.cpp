@@ -169,15 +169,13 @@ int main() {
       printf("\ncalling f4 to print an non existed file on the server");
       printf("\nEXPECTED return of f4: some integer other than 0");
       printf("\nACTUAL return of f4: %d\n", s4);
-    } else if (func == "q") {
+    } else if (func == "q" || func == "quit") {
       break;
     }
   }
 
   /* rpcTerminate */
-  printf("\ndo you want to terminate? y/n: ");
-  if (getchar() == 'y')
-    rpcTerminate();
+  rpcTerminate();
 
   // /* end of client.c */
   return 0;

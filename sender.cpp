@@ -100,6 +100,7 @@ Sender::Sender(int socketFileDescriptor)
 *****************************************************/
 
 int Sender::sendTerminateMessage() {
+	cerr << "SEND TERMINATE" << endl;
  	sendMessage(0, TERMINATE, NULL);
  	return 0;
 }
