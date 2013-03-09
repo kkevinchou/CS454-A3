@@ -32,9 +32,11 @@ static map<int, MessageType> msgInfo;
 static bool terminating;
 extern bool debug;
 
-void addService(string name, int argTypes[], string serverID, unsigned short port) {
+ReasonCode addService(string name, int argTypes[], string serverID, unsigned short port) {
     rpcFunctionKey key(name, argTypes);
     server_info location(serverID, port);
+
+    ReasonCode r = SUCCESS;
 
     if (servicesDictionary.find(key) == servicesDictionary.end()) {
         // The key doesn't exist.  Since argTypes is allocated on the stack, we
@@ -65,10 +67,12 @@ void addService(string name, int argTypes[], string serverID, unsigned short por
         if (*oldServerInfo == *l) {
             hostList->remove(oldServerInfo);
             delete oldServerInfo;
+            r = FUNCTION_OVERRIDDEN;
         }
     }
 
     hostList->push_back(l);
+    return r;
 }
 
 void registerServer(string serverID, unsigned short port, int serverFd) {
@@ -109,8 +113,23 @@ void handleRegisterRequest(Receiver &receiver, char buffer[], unsigned int buffe
     int argTypes[argTypesLength];
     b.extractArgTypes(bufferPointer, argTypes);
 
-    addService(name, argTypes, serverID, port);
-    registerServer(serverID, port, serverFd);
+    ReasonCode r = SUCCESS;
+
+    bool failed = false;
+    try {
+        registerServer(serverID, port, serverFd);
+        r = addService(name, argTypes, serverID, port);
+    } catch (int e) {
+        failed = true;
+        r = FAILURE;
+    }
+
+    Sender s(serverFd);
+    if (!failed) {
+        s.sendRegisterSuccessMessage(r);
+    } else {
+        s.sendRegisterFailureMessage(r);
+    }
 }
 
 server_info *getRoundRobinServer(const rpcFunctionKey &key) {
