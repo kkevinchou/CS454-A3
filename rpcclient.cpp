@@ -16,6 +16,10 @@ static bool debug = false;
 static int binderSocketFd = -1;
 
 int connectToBinder() {
+    if (binderSocketFd >= 0) {
+        return 0;
+    }
+
     char * binderAddressString = getenv ("BINDER_ADDRESS");
     char * binderPortString = getenv("BINDER_PORT");
 

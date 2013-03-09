@@ -56,7 +56,7 @@ ReasonCode addService(string name, int argTypes[], string serverID, unsigned sho
         servicesDictionary[key] = new list<server_info *>();
         cerr << "NEW KEY" << endl;
     } else {
-        cerr << "OLD KEY" << endl;
+        cerr << "OLD KEY" << endl;./
     }
 
     list<server_info *> *hostList = servicesDictionary[key];
