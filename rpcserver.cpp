@@ -282,6 +282,10 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 		    	cout << "Terminate message received from binder"<<endl;
 		    	return -1;
 		    }
+		    else
+		    {
+		    	cout << "C"<<endl;
+		    }
         }else cout << "B"<<endl;
 
        
@@ -328,6 +332,7 @@ int rpcExecute()
 	            if (FD_ISSET(i, &working_set)) {
 	                if (i != localSocketFd) {
 	                    int clientSocketFd = i;
+	                    cout << "handle"<<endl;
 	                    int requestCode = handleRequest(clientSocketFd, &master_set, chunkInfo);
 	                    if(requestCode < 0)
 	                    {

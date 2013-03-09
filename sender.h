@@ -20,6 +20,8 @@ class Sender
 
         // Protocol Functions
         int sendTerminateMessage();
+        int sendRegisterSuccessMessage(ReasonCode code);
+        int sendRegisterFailureMessage(ReasonCode code);
         int sendRegisterMessage(string serverID, unsigned short port, string name, int argTypes[]);
         int sendLocRequestMessage(string name, int argTypes[]);
         int sendLocSuccessMessage(string serverID, unsigned short port);

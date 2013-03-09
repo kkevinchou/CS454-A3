@@ -13,9 +13,9 @@
 using namespace std;
 
 static bool debug = true;
-static int binderSocketFd;
+static int binderSocketFd = -1;
 
-int sendLocRequest(string name, int argTypes[]) {
+int connectToBinder() {
     char * binderAddressString = getenv ("BINDER_ADDRESS");
     char * binderPortString = getenv("BINDER_PORT");
 
@@ -29,10 +29,18 @@ int sendLocRequest(string name, int argTypes[]) {
         return binderSocketFd;
     }
 
-    Sender s(binderSocketFd);
-    s.sendLocRequestMessage(name, argTypes);
-
     return 0;
+}
+
+int sendLocRequest(string name, int argTypes[]) {
+    int status = connectToBinder();
+
+    if (status == 0) {
+        Sender s(binderSocketFd);
+        status = s.sendLocRequestMessage(name, argTypes);
+    }
+
+    return status;
 }
 
 
@@ -78,7 +86,7 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
     Receiver r(serverSocketFd);
     int n = r.receiveMessageSize(messageSize);
     if(n < 0) return n;
-    MessageType type; 
+    MessageType type;
     n = r.receiveMessageType(type);
     if(n < 0) return n;
     if(debug)cout << "Received "<< messageSize << " "<<type<<endl;
@@ -138,7 +146,7 @@ int processLocResponse(string &serverID, unsigned short &port) {
     MessageType msgType;
     n = r.receiveMessageType(msgType);
     if(n < 0) return n;
-    
+
     char buffer[messageSize];
     char *bufferPointer = buffer;
     n = r.receiveMessageGivenSize(messageSize, buffer);
@@ -184,9 +192,16 @@ int rpcCall(char* name, int* argTypes, void** args) {
 }
 int rpcTerminate()
 {
-    // TODO: send terminate message
-    Sender s(binderSocketFd);
-    s.sendTerminateMessage();
+    int status = 0;
 
-    return 0;
+    if (binderSocketFd < 0) {
+        status = connectToBinder();
+    }
+
+    if (status == 0) {
+        Sender s(binderSocketFd);
+        status = s.sendTerminateMessage();
+    }
+
+    return status;
 }

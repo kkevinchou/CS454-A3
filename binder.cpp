@@ -253,6 +253,8 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
                 handleRegisterRequest(receiver, buffer, size, clientSocketFd);
             } else if (msgType == LOC_REQUEST) {
                 handleLocRequest(receiver, sender, buffer, size);
+            } else if (msgType == TERMINATE) {
+                handleTerminateRequest();
             } else {
                 cerr << "[BINDER] UNHANDLED MESSAGE TYPE: " << static_cast<int>(msgType) << endl;
             }

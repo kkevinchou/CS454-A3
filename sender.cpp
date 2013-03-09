@@ -100,7 +100,8 @@ Sender::Sender(int socketFileDescriptor)
 *****************************************************/
 
 int Sender::sendTerminateMessage() {
-	 cout << "Send terminate"<<endl;
+
+
  	sendMessage(0, TERMINATE, NULL);
  	return 0;
 }
@@ -123,6 +124,36 @@ int Sender::sendRegisterMessage(string serverID, unsigned short port, string nam
  	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
 
  	sendMessage(messageSize, REGISTER, buffer);
+
+ 	return 0;
+}
+
+int Sender::sendRegisterSuccessMessage(ReasonCode code) {
+	unsigned int reasonCodeSize = 4;
+
+	unsigned int messageSize = reasonCodeSize;
+	char buffer[messageSize];
+	char *bufferP = buffer;
+
+	RWBuffer b;
+	bufferP = b.insertIntToBuffer(static_cast<int>(code), bufferP);
+
+ 	sendMessage(messageSize, REGISTER_SUCCESS, buffer);
+
+ 	return 0;
+}
+
+int Sender::sendRegisterFailureMessage(ReasonCode code) {
+	unsigned int reasonCodeSize = 4;
+
+	unsigned int messageSize = reasonCodeSize;
+	char buffer[messageSize];
+	char *bufferP = buffer;
+
+	RWBuffer b;
+	bufferP = b.insertIntToBuffer(static_cast<int>(code), bufferP);
+
+ 	sendMessage(messageSize, REGISTER_FAILURE, buffer);
 
  	return 0;
 }
