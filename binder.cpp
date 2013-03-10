@@ -185,8 +185,11 @@ bool rpcArraySizeOkay(const rpcFunctionKey l, const rpcFunctionKey r) {
 
     while(lArgs!= 0 && rArgs != 0)
     {
-        int lArraySize = lArgs & 0x1111;
-        int rArraySize = rArgs & 0x1111;
+        int lArraySize = lArgs & 0xFFFF;
+        int rArraySize = rArgs & 0xFFFF;
+
+        cerr << "lArraySize = " << lArraySize << endl;
+        cerr << "rArraySize = " << rArraySize << endl;
 
         if (lArraySize > rArraySize)
         {
