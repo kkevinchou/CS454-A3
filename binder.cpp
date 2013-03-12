@@ -214,25 +214,23 @@ server_info *getRoundRobinServer(const rpcFunctionKey &key) {
     }
 
     list<service_info *> *availServers = servicesDictionary[key];
-
     server_info *selectedServer = NULL;
-    for (list<server_info *>::iterator it = roundRobinQueue.begin(); it != roundRobinQueue.end(); it++) {
-        server_info *nextRRServer = (*it);
 
-        for (list<service_info *>::iterator it2 = availServers->begin(); it2 != availServers->end(); it2++) {
-            service_info *supportingServer = (*it2);
+    for (unsigned int i = 0; i < roundRobinQueue.size(); i++) {
+        server_info *nextRRServer = roundRobinQueue.front();
+
+        for (list<service_info *>::iterator it = availServers->begin(); it != availServers->end(); it++) {
+            service_info *supportingServer = (*it);
             struct rpcFunctionKey *serverKey = supportingServer->functionKey;
-            if (*nextRRServer == *supportingServer && rpcArraySizeOkay(key, *serverKey)) {
+            if (*nextRRServer == *supportingServer) {
                 selectedServer = nextRRServer;
                 break;
             }
         }
 
+        roundRobinQueue.splice(roundRobinQueue.end(), roundRobinQueue, roundRobinQueue.begin());
+
         if (selectedServer != NULL) {
-            // cerr << "front port was: " << roundRobinQueue.front()->port << endl;
-            roundRobinQueue.splice(roundRobinQueue.end(), roundRobinQueue, it);
-            // cerr << "front port is: " << roundRobinQueue.front()->port << endl;
-            // cerr << "last port is: " << roundRobinQueue.back()->port << endl;
             break;
         }
     }
