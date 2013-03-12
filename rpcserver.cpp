@@ -190,15 +190,16 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 
 	// Sender s(clientSocketFd);
 	// s.sendMessage(recvStr);
-	//string name;
-	size_t nameSize = strlen(message);
-	char name[nameSize+1];
+	string name;
+	//size_t nameSize = strlen(message);
+	//char name[nameSize+1];
 
 
 	char * bufferPointer = message;
 
 	//bufferPointer = b.extractString(bufferPointer, name);
-	bufferPointer = b.extractCharArray(bufferPointer, name, nameSize+1);
+	//bufferPointer = b.extractCharArray(bufferPointer, name, nameSize+1);
+	bufferPointer = b.extractString(bufferPointer, name);
 	if(debug)cout << "Name: "<<name<<endl;
 	
 
@@ -231,7 +232,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 			// send success message
 			char returnMessage[messageSize];
 
-			insertClientServerMessageToBuffer(returnMessage, name, argTypes, args);
+			insertClientServerMessageToBuffer(returnMessage, name.c_str(), argTypes, args);
 		    if(debug)
 		    {
 		        cout << endl;

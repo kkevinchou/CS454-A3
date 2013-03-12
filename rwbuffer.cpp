@@ -183,7 +183,7 @@ char * RWBuffer::extractString(char * bufferP, string &s)
         r += *bufferP;
         bufferP++;
     }
-    s = r;
+    s.assign(r);
     bufferP++;
     return bufferP;
 }
