@@ -62,8 +62,8 @@ void f3(long a[]) {
     }
   }
 }
-void f3(long a) {
-
+void f3(long &a) {
+a = 20;
     cout << "Called f3b: "<< a  << endl;
 }
 
