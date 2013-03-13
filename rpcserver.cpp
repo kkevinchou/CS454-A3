@@ -17,6 +17,7 @@
 #include "helpers.h"
 #include <map>
 #include <pthread.h>
+#include <vector>
 
 using namespace std;
 static bool debug = true;
@@ -25,7 +26,6 @@ static int binderSocketFd;
 static pthread_mutex_t * _threadLock;
 static map<pthread_t, bool> _runningThreads;
 static bool shouldTerminate = false;
-static bool willTerminate = false;
 static map<rpcFunctionKey, skeleton> registeredFunctions;
 
 /*bool operator > (const pthread_t& left, const pthread_t& right)
@@ -159,14 +159,11 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 }
 void removeThreadFromList(pthread_t key)
 {
+
 	if(_threadLock)
 	{
 		pthread_mutex_lock(_threadLock);
 		_runningThreads.erase(key);
-		if(_runningThreads.size() == 0 && shouldTerminate) 
-		{
-			willTerminate = true;
-		}
 		pthread_mutex_unlock(_threadLock);
 	}
 	// else no lock? Don't do anything. Unsafe.
@@ -388,9 +385,8 @@ int rpcExecute()
 //cout<< "Binder socket: "<< binderSocketFd << endl;
     map<int, unsigned int> chunkInfo;
 
-    while (!willTerminate) {
-    	if(!shouldTerminate)
-    	{
+    while (!shouldTerminate) {
+
     		 memcpy(&working_set, &master_set, sizeof(master_set));
 	        int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
 
@@ -414,7 +410,6 @@ int rpcExecute()
 	                    	// break out of the execute loop
 	                    	//cout << "Should terminate server after all threads are done" << endl;
 	                    	shouldTerminate = true;
-	                    	if(_runningThreads.size() == 0) willTerminate = true;
 	                    	break;
 
 	                    }
@@ -426,9 +421,29 @@ int rpcExecute()
 	                }
 	            }
 	        }
-    	}
+    	
        
     }
+
+    vector<pthread_t> livingThreads;
+
+    // make a copy of all living threads while within the lock
+    pthread_mutex_lock(_threadLock);
+    map<pthread_t, bool>::iterator existingThreadsBegin = _runningThreads.begin();
+    while(existingThreadsBegin != _runningThreads.end())
+    {
+    	livingThreads.push_back(existingThreadsBegin->first);
+    	existingThreadsBegin++;
+    }
+	pthread_mutex_unlock(_threadLock);
+
+	// wait until the list of living threads are all done
+	for(int i = 0; i < livingThreads.size(); i++)
+	{
+		pthread_join(livingThreads[i], NULL);
+	}
+
+
     close(binderSocketFd);
     close(localSocketFd);
 
