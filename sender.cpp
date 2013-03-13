@@ -14,7 +14,7 @@ using namespace std;
 int Sender::sendArray(unsigned int length, char data[])
 {
 	char * bytesPtr = data;
-	unsigned int sentSize = length;
+	unsigned int sendSize = length;
 	int n;
 	if(debug)
 	{
@@ -27,14 +27,16 @@ int Sender::sendArray(unsigned int length, char data[])
 		 cout << endl;
 	}
 
-	while(true)
+	while(sendSize > 0)
 	{
 		// send the first 4 bytes
 		// keep sending until send returns 0
-		n = send(_sfd, bytesPtr, sentSize, 0);
+		cout << "SENDING "<<sendSize<<endl;
+		n = send(_sfd, bytesPtr, sendSize, 0);
 
 		if (n == 0)
 		{
+			cout << "SENDING finished"<<endl;
 			break;
 		}
 		else if(n<0)
@@ -43,11 +45,11 @@ int Sender::sendArray(unsigned int length, char data[])
 			return n;
 		}
 
-		sentSize -= n;
+		sendSize -= n;
 		bytesPtr += n;
 	}
 
-	return sentSize;
+	return sendSize;
 }
 
 int Sender::getSocketFD()

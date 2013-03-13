@@ -250,7 +250,9 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		        }
 		        cout << endl;
 		    }
+		    cout << "Sending success"<<endl;
 		    int r = s.sendMessage(messageSize, EXECUTE_SUCCESS, returnMessage);
+		    cout << "Done sending success"<<endl;
 		    if(r != 0) cerr << "WARNING: Send EXECUTE_SUCESS message failed: "<<r <<endl;
 		}
 		else
@@ -302,6 +304,7 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 	unsigned int messageSize;
 
      //   cout << "nb" << nb << " " << numBytes<<endl;
+	cout << "Receiving request..."<<endl;
     if(receiver.receiveMessageSize(messageSize) == 0 )
     {
         MessageType type;

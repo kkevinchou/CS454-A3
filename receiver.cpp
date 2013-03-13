@@ -64,7 +64,7 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
 
     char * bufferPointer = ret;
     unsigned int sizeLeft = messageSize;
-    while(true)
+    while(sizeLeft > 0)
     {
         memset(bufferPointer,0,sizeLeft);
         n = recv(_sfd,bufferPointer,sizeLeft, 0);
@@ -81,7 +81,6 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
         }
          bufferPointer += n;
          sizeLeft -= n;
-         if(sizeLeft <= 0) break;
 
     }
 
@@ -94,6 +93,8 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
         }
         cout << endl;
     }
+
+    cout << "Done receiving"<<endl;
     return 0;
 }
 
