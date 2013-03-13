@@ -1,0 +1,23 @@
+"make" builds librpc.a
+
+To compile client:
+g++ -L. client.o -lrpc -o client
+To run client:
+./client
+
+To compile server:
+g++ -L. server_functions.o server_function_skels.o server.o -lrpc -lpthread -o server
+To run server:
+./server
+
+Our server uses the pthread library
+
+Group members:
+
+Name: Yufei Guo
+Username: y43guo
+Userid: 20348014
+
+Name: Chi Ming Chou
+Username: cm2chou
+Userid: 20309042
