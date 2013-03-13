@@ -145,13 +145,17 @@ void handleRegisterRequest(Receiver &receiver, Sender &sender, char buffer[], un
     ReasonCode r = SUCCESS;
 
     try {
-        string serverID;
         unsigned short port;
         string name;
         RWBuffer b;
+        unsigned int nameLength;
 
         char * bufferPointer = buffer;
-        bufferPointer = b.extractString(bufferPointer, serverID);
+        bufferPointer = b.extractUnsignedInt(bufferPointer, nameLength);
+        char nameChar[nameLength];
+
+        bufferPointer = b.extractCharArray(bufferPointer, nameChar, nameLength);
+        string serverID(nameChar);
         bufferPointer = b.extractUnsignedShort(bufferPointer, port);
         bufferPointer = b.extractString(bufferPointer, name);
 
@@ -240,12 +244,19 @@ server_info *getRoundRobinServer(const rpcFunctionKey &key) {
 
 void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize) {
     try {
-        string name;
         RWBuffer b;
         char * bufferPointer = buffer;
-        bufferPointer = b.extractString(bufferPointer, name);
 
-        unsigned int nameSize = name.size() + 1;
+
+        unsigned int nameSize;
+        bufferPointer = b.extractUnsignedInt(bufferPointer, nameSize);
+
+        char nameChar[nameSize];
+        bufferPointer = b.extractCharArray(bufferPointer, nameChar, nameSize);
+
+        string name(nameChar);
+
+        
 
         unsigned int argTypesLength = (bufferSize - nameSize) / 4;
         int argTypes[argTypesLength];

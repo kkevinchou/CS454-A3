@@ -190,7 +190,6 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 
 	// Sender s(clientSocketFd);
 	// s.sendMessage(recvStr);
-	string name;
 	//size_t nameSize = strlen(message);
 	//char name[nameSize+1];
 
@@ -199,7 +198,12 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 
 	//bufferPointer = b.extractString(bufferPointer, name);
 	//bufferPointer = b.extractCharArray(bufferPointer, name, nameSize+1);
-	bufferPointer = b.extractString(bufferPointer, name);
+	unsigned int nameSize;
+	bufferPointer = b.extractUnsignedInt(bufferPointer, nameSize);
+	char nameChar[nameSize];
+
+	bufferPointer = b.extractCharArray(bufferPointer, nameChar, nameSize);
+	string name(nameChar);
 	if(debug)cout << "Name: "<<name<<endl;
 	
 

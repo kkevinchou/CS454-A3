@@ -112,11 +112,12 @@ int Sender::sendRegisterMessage(string serverID, unsigned short port, string nam
 	unsigned int argTypesLength = 0;
 	while (argTypes[argTypesLength++]);
 
- 	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesLength * 4;
+ 	unsigned int messageSize = 4 + serverIdSize + portSize + nameSize + argTypesLength * 4;
  	char buffer[messageSize];
  	char *bufferP = buffer;
 
  	RWBuffer b;
+ 	bufferP = b.insertUnsignedIntToBuffer(serverID.size()+1, bufferP);
  	bufferP = b.insertStringToBuffer(serverID, bufferP);
  	bufferP = b.insertShortToBuffer(port, bufferP);
  	bufferP = b.insertStringToBuffer(name, bufferP);
@@ -156,11 +157,12 @@ int Sender::sendLocRequestMessage(string name, int argTypes[]) {
 	unsigned int argTypesLength = 0;
 	while (argTypes[argTypesLength++]);
 
-	unsigned int messageSize = nameSize + argTypesLength * 4;
+	unsigned int messageSize = 4+nameSize + argTypesLength * 4;
 	char buffer[messageSize];
 	char *bufferP = buffer;
 
 	RWBuffer b;
+	bufferP = b.insertUnsignedIntToBuffer(name.size()+1, bufferP);
 	bufferP = b.insertStringToBuffer(name, bufferP);
  	bufferP = b.insertIntArrayToBuffer(argTypes, argTypesLength, bufferP);
 
@@ -171,11 +173,12 @@ int Sender::sendLocSuccessMessage(string serverID, unsigned short port) {
 	unsigned int serverIdSize = serverID.size() + 1;
 	unsigned int portSize = 2;
 
-	unsigned int messageSize = serverIdSize + portSize;
+	unsigned int messageSize = 4 + serverIdSize + portSize;
 	char buffer[messageSize];
 	char *bufferP = buffer;
 
 	RWBuffer b;
+	bufferP = b.insertUnsignedIntToBuffer(serverID.size()+1, bufferP);
 	bufferP = b.insertStringToBuffer(serverID, bufferP);
  	bufferP = b.insertShortToBuffer(port, bufferP);
 

@@ -202,7 +202,7 @@ int insertClientServerMessageToBuffer(char *messagePointer, const char* name, in
 {
     RWBuffer b;
     unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
-
+    messagePointer = b.insertUnsignedIntToBuffer(strlen(name)+1, messagePointer);
     messagePointer = b.insertCStringToBuffer(name, messagePointer);
     messagePointer = b.insertIntArrayToBuffer(argTypes, argTypesLength, messagePointer);
 
@@ -337,6 +337,8 @@ unsigned int getClientServerMessageLength(const char* name, int* argTypes, void*
         nameP++;
     }
     messageSize++; //accountfor null termination char
+
+    messageSize += 4; // account for sending size of name
 
     return messageSize;
 }

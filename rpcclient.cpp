@@ -115,8 +115,13 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
             if(debug)cout << "Success!"<<endl;
             char * replyMessageP = replyMessage;
             unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
-            string functionName;
-            replyMessageP = b.extractString(replyMessageP, functionName);
+            unsigned int nameSize;
+
+            replyMessageP = b.extractUnsignedInt(replyMessageP, nameSize);
+            char nameChar[nameSize];
+
+            replyMessageP = b.extractCharArray(replyMessageP, nameChar, nameSize);
+            string functionName(nameChar);
             if(strcmp(functionName.c_str(), name) == 0)
             {
                 extractArgumentsMessage(replyMessageP, argTypes, args, argTypesLength, false);
@@ -166,7 +171,15 @@ int processLocResponse(string &serverID, unsigned short &port) {
     RWBuffer b;
 
     if (msgType == LOC_SUCCESS) {
-        bufferPointer = b.extractString(bufferPointer, serverID);
+        unsigned int serverIDLength;
+        bufferPointer = b.extractUnsignedInt(bufferPointer, serverIDLength);
+
+        char serverIDChar[serverIDLength];
+
+        bufferPointer = b.extractCharArray(bufferPointer, serverIDChar, serverIDLength);
+
+        serverID.assign(serverIDChar);
+
         bufferPointer = b.extractUnsignedShort(bufferPointer, port);
         return 0;
     } else if (msgType == LOC_FAILURE) {
