@@ -145,13 +145,17 @@ void handleRegisterRequest(Receiver &receiver, Sender &sender, char buffer[], un
     ReasonCode r = SUCCESS;
 
     try {
-        string serverID;
         unsigned short port;
         string name;
         RWBuffer b;
+        unsigned int nameLength;
 
         char * bufferPointer = buffer;
-        bufferPointer = b.extractString(bufferPointer, serverID);
+        bufferPointer = b.extractUnsignedInt(bufferPointer, nameLength);
+        char nameChar[nameLength];
+
+        bufferPointer = b.extractCharArray(bufferPointer, nameChar, nameLength);
+        string serverID(nameChar);
         bufferPointer = b.extractUnsignedShort(bufferPointer, port);
         bufferPointer = b.extractString(bufferPointer, name);
 

@@ -112,11 +112,12 @@ int Sender::sendRegisterMessage(string serverID, unsigned short port, string nam
 	unsigned int argTypesLength = 0;
 	while (argTypes[argTypesLength++]);
 
- 	unsigned int messageSize = serverIdSize + portSize + nameSize + argTypesLength * 4;
+ 	unsigned int messageSize = 4 + serverIdSize + portSize + nameSize + argTypesLength * 4;
  	char buffer[messageSize];
  	char *bufferP = buffer;
 
  	RWBuffer b;
+ 	bufferP = b.insertUnsignedIntToBuffer(serverID.size()+1, bufferP);
  	bufferP = b.insertStringToBuffer(serverID, bufferP);
  	bufferP = b.insertShortToBuffer(port, bufferP);
  	bufferP = b.insertStringToBuffer(name, bufferP);
