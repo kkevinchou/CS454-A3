@@ -240,12 +240,19 @@ server_info *getRoundRobinServer(const rpcFunctionKey &key) {
 
 void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize) {
     try {
-        string name;
         RWBuffer b;
         char * bufferPointer = buffer;
-        bufferPointer = b.extractString(bufferPointer, name);
 
-        unsigned int nameSize = name.size() + 1;
+
+        unsigned int nameSize;
+        bufferPointer = b.extractUnsignedInt(bufferPointer, nameSize);
+
+        char nameChar[nameSize];
+        bufferPointer = b.extractCharArray(bufferPointer, nameChar, nameSize);
+
+        string name(nameChar);
+
+        
 
         unsigned int argTypesLength = (bufferSize - nameSize) / 4;
         int argTypes[argTypesLength];

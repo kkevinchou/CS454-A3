@@ -171,7 +171,15 @@ int processLocResponse(string &serverID, unsigned short &port) {
     RWBuffer b;
 
     if (msgType == LOC_SUCCESS) {
-        bufferPointer = b.extractString(bufferPointer, serverID);
+        unsigned int serverIDLength;
+        bufferPointer = b.extractUnsignedInt(bufferPointer, serverIDLength);
+
+        char serverIDChar[serverIDLength];
+
+        bufferPointer = b.extractCharArray(bufferPointer, serverIDChar, serverIDLength);
+
+        serverID.assign(serverIDChar);
+
         bufferPointer = b.extractUnsignedShort(bufferPointer, port);
         return 0;
     } else if (msgType == LOC_FAILURE) {
