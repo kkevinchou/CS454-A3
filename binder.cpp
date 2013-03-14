@@ -242,6 +242,47 @@ server_info *getRoundRobinServer(const rpcFunctionKey &key) {
     return selectedServer;
 }
 
+void handleLocCacheRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize)
+{
+    try {
+        RWBuffer b;
+        char * bufferPointer = buffer;
+
+        // getting function name length
+        unsigned int nameSize;
+        bufferPointer = b.extractUnsignedInt(bufferPointer, nameSize);
+
+        // getting function name
+        char nameChar[nameSize];
+        bufferPointer = b.extractCharArray(bufferPointer, nameChar, nameSize);
+        string name(nameChar);
+
+        // getting argtypes
+        unsigned int argTypesLength = (bufferSize - nameSize) / 4;
+        int argTypes[argTypesLength];
+        b.extractArgTypes(bufferPointer, argTypes);
+
+        rpcFunctionKey key(name, argTypes);
+
+        if(servicesDictionary.find(key) != servicesDictionary.end())
+        {
+            // found
+            list<service_info *> * lp = servicesDictionary[key];
+            cerr << "CACHE LOC REQ FOUND!" << endl;
+
+            sender.sendLocCacheSuccessMessage(*lp);
+
+
+        }
+        else
+        {
+            cerr << "CACHE LOC REQ NOT FOUND!" << endl;
+            sender.sendLocCacheFailureMessage(FUNCTION_NOT_AVAILABLE);
+        }
+    } catch (int e) {
+        sender.sendLocCacheFailureMessage(FAILURE);
+    }
+}
 void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigned int bufferSize) {
     try {
         RWBuffer b;
@@ -350,6 +391,7 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
     } else {
         unsigned int size = chunkInfo[clientSocketFd];
         char buffer[size];
+        cout << "Bimder receiving..."<<endl;
         if (receiver.receiveMessageGivenSize(size, buffer) == 0)
         {
             chunkInfo[clientSocketFd] = 0;
@@ -359,6 +401,8 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
                 handleRegisterRequest(receiver, sender, buffer, size, clientSocketFd);
             } else if (msgType == LOC_REQUEST) {
                 handleLocRequest(receiver, sender, buffer, size);
+            } else if (msgType == LOC_CACHE_REQUEST) {
+                handleLocCacheRequest(receiver, sender, buffer, size);
             } else if (msgType == TERMINATE) {
                 handleTerminateRequest();
             } else {

@@ -18,8 +18,6 @@ int Sender::sendArray(unsigned int length, char data[])
 	int n;
 	if(debug)
 	{
-		cout << "Sending size "<<length<<endl;
-		 cout << "Sending: ";
 		 for(unsigned int i = 0; i < length; i++)
 		 {
 		 	cout << (int)data[i] << " ";
@@ -31,12 +29,11 @@ int Sender::sendArray(unsigned int length, char data[])
 	{
 		// send the first 4 bytes
 		// keep sending until send returns 0
-		cout << "SENDING "<<sendSize<<endl;
 		n = send(_sfd, bytesPtr, sendSize, 0);
 
 		if (n == 0)
 		{
-			cout << "SENDING finished"<<endl;
+
 			break;
 		}
 		else if(n<0)
@@ -188,6 +185,68 @@ int Sender::sendLocSuccessMessage(string serverID, unsigned short port) {
 
 }
 
+int Sender::sendLocCacheSuccessMessage(list<service_info*>&l)
+{
+	unsigned int portSize = 2;
+
+	unsigned int messageSize = 0;
+	unsigned int numLocs = 0;
+	list<service_info*>::iterator it = l.begin();
+	while(it != l.end())
+	{
+		service_info * s = *it;
+		messageSize += 4 + s->server_identifier.size() + 1 + portSize;
+		it++;
+		numLocs++;
+	}
+
+	char buffer[messageSize];
+	char *bufferP = buffer;
+
+	RWBuffer b;
+	it = l.begin();
+	for(int i = 0; i < numLocs; i++)
+	{
+		service_info * s = *it;
+		bufferP = b.insertUnsignedIntToBuffer(s->server_identifier.size()+1, bufferP);
+		bufferP = b.insertCharArrayToBuffer(s->server_identifier.c_str(), s->server_identifier.size()+1,bufferP);
+	 	bufferP = b.insertShortToBuffer(s->port, bufferP);
+
+	 	it++;
+	}
+
+ 	return sendMessage(messageSize, LOC_CACHE_SUCCESS, buffer);
+}
+
+int Sender::sendLocCacheRequestMessage(string functionName, int*argTypes)
+{
+	RWBuffer b;
+	unsigned int argsLength = b.returnArgTypesLength(argTypes);
+
+	unsigned int messageSize = 4 + functionName.size()+1 + argsLength*4;
+
+
+	char buffer[messageSize];
+	char * bufferP = buffer;
+	bufferP = b.insertUnsignedIntToBuffer(functionName.size()+1, bufferP);
+	bufferP = b.insertCharArrayToBuffer(functionName.c_str(), functionName.size()+1, bufferP);
+	bufferP = b.insertIntArrayToBuffer(argTypes, argsLength, bufferP);
+	return sendMessage(messageSize, LOC_CACHE_REQUEST, buffer);
+
+}
+int Sender::sendLocCacheFailureMessage(ReasonCode reasonCode) 
+{
+		unsigned int reasonCodeSize = 4;
+
+	unsigned int messageSize = reasonCodeSize;
+	char buffer[messageSize];
+	char *bufferP = buffer;
+
+	RWBuffer b;
+	bufferP = b.insertIntToBuffer(static_cast<int>(reasonCode), bufferP);
+
+ 	return sendMessage(messageSize, LOC_CACHE_FAILURE, buffer);
+}
 int Sender::sendLocFailureMessage(ReasonCode reasonCode) {
 	unsigned int reasonCodeSize = 4;
 

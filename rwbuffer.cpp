@@ -284,7 +284,7 @@ char * RWBuffer::insertShortArrayToBuffer(short shortArray[], int length, char *
 
 	return bufferP;
 }
-char * RWBuffer::insertCharArrayToBuffer(char charArray[], int length, char *bufferP)
+char * RWBuffer::insertCharArrayToBuffer(const char charArray[], int length, char *bufferP)
 {
 	for (int i = 0; i < length; i++) {
 		bufferP = insertCharToBuffer(charArray[i], bufferP);

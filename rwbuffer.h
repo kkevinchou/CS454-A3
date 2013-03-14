@@ -29,7 +29,7 @@ class RWBuffer
      	char *insertIntArrayToBuffer(int intBuf[], int numInts, char *bufferP);
 		char * insertDoubleArrayToBuffer(double doubleArray[], int length, char *bufferP);
 		char * insertFloatArrayToBuffer(float floatArray[], int length, char *bufferP) ;
-		char * insertCharArrayToBuffer(char charArray[], int length, char *bufferP) ;
+		char * insertCharArrayToBuffer(const char charArray[], int length, char *bufferP) ;
 		char * insertShortArrayToBuffer(short shortArray[], int length, char *bufferP);
 		char * insertLongArrayToBuffer(long longArray[], int length, char *bufferP);
 

@@ -122,7 +122,8 @@ int main() {
         printf("Error: %d\n", s0);
       }
     } else if (func == "f1") {
-      int s1 = rpcCall("f1", argTypes1, args1);
+       cout << "Cache call"<<endl;
+      int s1 = rpcCacheCall("f1", argTypes1, args1);
 
       /* test the return of f1 */
       printf("\nEXPECTED return of f1 is: %ld\n", a1 + b1 * c1 - d1);

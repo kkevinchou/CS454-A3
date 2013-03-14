@@ -15,7 +15,7 @@
 #include "rpc.h"
 #include "rwbuffer.h"
 using namespace std;
-static bool debug = true;
+static bool debug = false;
 unsigned int sizeOfType(int type)
 {
     switch(type)
@@ -97,7 +97,7 @@ int setupSocketAndReturnDescriptor(const char * serverAddressString, int serverP
     {
         return SOCKET_OPEN_FAILURE;
     }
-
+    cout << socketFileDescriptor<<endl;
     server = gethostbyname(serverAddressString);
 
     if (server == NULL) {
@@ -105,7 +105,7 @@ int setupSocketAndReturnDescriptor(const char * serverAddressString, int serverP
        return SOCKET_UNKNOWN_HOST;
 
     }
-
+cout << server << endl;
     memset((char *) &serverAddressStruct, 0,sizeof(serverAddressStruct));
 
     serverAddressStruct.sin_family = AF_INET;
@@ -120,6 +120,7 @@ int setupSocketAndReturnDescriptor(const char * serverAddressString, int serverP
     {
         return SOCKET_CONNECTION_FALIURE;
     }
+    cout << 'A'<<endl;
 
     return socketFileDescriptor;
 }

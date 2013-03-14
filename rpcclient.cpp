@@ -11,9 +11,39 @@
 #include "receiver.h"
 #include "rwbuffer.h"
 using namespace std;
-
+static map<rpcFunctionKey, list<service_info> > cachedServicesDictionary;
 static bool debug = true;
 static int binderSocketFd = -1;
+
+
+int handleLocCacheCall(unsigned int messageSize, char buffer[], rpcFunctionKey &key)
+{
+    char * bufferP = buffer;
+    unsigned int portSize = 2;
+    RWBuffer b;
+
+    list<service_info> list;
+
+
+
+    while(messageSize > 0)
+    {
+        unsigned int serverIDSize;
+        bufferP = b.extractUnsignedInt(bufferP, serverIDSize);
+        char serverIDChar[serverIDSize];
+        bufferP = b.extractCharArray(bufferP, serverIDChar, serverIDSize);
+        string serverID(serverIDChar);
+        unsigned short port;
+        bufferP = b.extractUnsignedShort(bufferP, port);
+
+        messageSize -= (4 + serverID.size()+1 + 2);
+
+        service_info si(serverID, port, &key);
+        list.push_back(si);
+    }
+
+    cachedServicesDictionary[key] = list;
+}
 
 int connectToBinder() {
     if (binderSocketFd >= 0) {
@@ -72,22 +102,8 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
     // create buffer for full message
     char message[messageSize];
 
-   // char * messagePointer = message;
-  //  messagePointer = b.insertUnsignedIntToBuffer(messageSize, messagePointer);
-   // messagePointer = b.insertIntToBuffer(static_cast<int>(EXECUTE), messagePointer);
-
    insertClientServerMessageToBuffer(message, name, argTypes, args);
 
-    if(debug)
-    {
-        cout << "Sending an EXECUTE message of size "<<messageSize << ": "<<endl;
-       /* for(unsigned int i = 0; i < messageSize; i++)
-        {
-            cout << (int)message[i] << " ";
-
-        }*/
-        cout << endl;
-    }
 
     // send remote procedure call
     int sendResult = s.sendMessage(messageSize, EXECUTE, message);
@@ -183,7 +199,7 @@ int processLocResponse(string &serverID, unsigned short &port) {
         bufferPointer = b.extractUnsignedShort(bufferPointer, port);
         return 0;
     } else if (msgType == LOC_FAILURE) {
-        cerr << "FAILURE" << endl;
+        cerr << "LOCATION REQUEST FAILURE" << endl;
         int reasonCode = 0;
         if(messageSize > 0)
         {
@@ -236,4 +252,97 @@ int rpcTerminate()
     }
 
     return status;
+}
+
+int sendExecuteToServers(char * name, int*argTypes, void**args, list<service_info> &l)
+{
+    list<service_info>::iterator it = l.begin();
+    while(it != l.end())
+    {
+        service_info s = *it;
+        if(debug)cout << "Sending execute to "<<s.server_identifier << " " << s.port<<endl;
+        int serverSocketFd = setupSocketAndReturnDescriptor(s.server_identifier.c_str(), s.port);
+        if(serverSocketFd <0) continue;
+        cout << "FD: "<<serverSocketFd<<endl;
+        int n = sendExecuteRequest(serverSocketFd,name, argTypes, args);
+
+        close(serverSocketFd);
+
+        if(n == 0) return 0;
+
+        it++;
+    }
+cout << "No servers"<<endl;
+    return -1;
+}
+int rpcCacheCall(char* name, int* argTypes, void** args)
+{
+    string nameString(name);
+    int n = 0;
+    RWBuffer b;
+
+    // if it already exists in cache, use cache
+    rpcFunctionKey key(nameString, argTypes);
+    if(cachedServicesDictionary.find(key) != cachedServicesDictionary.end())
+    {
+        list<service_info> l = cachedServicesDictionary[key];
+        n = sendExecuteToServers(name, argTypes, args, l);
+
+        if(n == 0) return 0;
+    }
+
+    // else fetch new servers from binder
+    // send request
+    
+    int status = connectToBinder();
+
+    if (status != 0) return status;
+
+    Sender s(binderSocketFd);
+    s.sendLocCacheRequestMessage(nameString, argTypes);
+
+    // listen for reply
+    Receiver r(binderSocketFd);
+    unsigned int messageSize;
+    n = r.receiveMessageSize(messageSize);
+    if(n < 0) return n;
+
+    MessageType type;
+    n = r.receiveMessageType(type);
+    if(n < 0) return n;
+
+    if(messageSize == 0) return RECEIVE_INVALID_MESSAGE;
+
+    char buffer[messageSize];
+    n = r.receiveMessageGivenSize(messageSize, buffer);
+    if(n < 0) return n;
+
+    if(type == LOC_CACHE_SUCCESS)
+    {
+       
+        n = handleLocCacheCall(messageSize, buffer, key); // updates cache
+    }
+    else if(type == LOC_CACHE_FAILURE)
+    {
+        int errorCode;
+        b.extractInt(buffer, errorCode);
+    }
+    else
+    {
+        return RECEIVE_INVALID_MESSAGE_TYPE;
+    }
+
+    if(cachedServicesDictionary.find(key) != cachedServicesDictionary.end())
+    {
+        list<service_info> l = cachedServicesDictionary[key];
+        n = sendExecuteToServers(name, argTypes, args, l);
+
+        return n;
+
+    }
+    else return FUNCTION_NOT_AVAILABLE;
+
+
+    //
+
 }

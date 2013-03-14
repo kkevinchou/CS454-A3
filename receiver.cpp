@@ -71,7 +71,6 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
         if (debug) cerr << "Receiving..."<<sizeLeft<<endl;
         if(n == 0)
         {
-            cerr << "Connection closed"<<endl;
             return SOCKET_CONNECTION_FALIURE; //connection closed!
         }
         else if (n < 0)
@@ -94,7 +93,6 @@ int Receiver::receiveMessageGivenSize(unsigned int messageSize, char ret[])
         cout << endl;
     }
 
-    cout << "Done receiving"<<endl;
     return 0;
 }
 
