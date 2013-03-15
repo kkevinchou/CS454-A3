@@ -19,7 +19,7 @@ all : ${EXECS}					# build all executables
 	ar rcs librpc.a sender.o receiver.o constants.o helpers.o rwbuffer.o rpcserver.o rpcclient.o
 
 ${EXEC1} : ${OBJECTS1}				# link step 1st executable
-	${CXX} $^ -o $@ -lpthread
+	${CXX} $^ -o $@
 #############################################################
 
 ${OBJECTS} : ${MAKEFILE_NAME}			# OPTIONAL : changes to this file => recompile
