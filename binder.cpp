@@ -257,9 +257,11 @@ void handleLocCacheRequest(Receiver &receiver, Sender &sender, char buffer[], un
             // found
             list<service_info *> * lp = servicesDictionary[key];
 
-            sender.sendLocCacheSuccessMessage(*lp);
-
-
+            if (lp->size() > 0) {
+                sender.sendLocCacheSuccessMessage(*lp);
+            } else {
+                sender.sendLocCacheFailureMessage(FUNCTION_NOT_AVAILABLE);
+            }
         }
         else
         {

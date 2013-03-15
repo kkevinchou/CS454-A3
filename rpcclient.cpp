@@ -24,8 +24,6 @@ int handleLocCacheCall(unsigned int messageSize, char buffer[], rpcFunctionKey &
 
     list<service_info> list;
 
-
-
     while(messageSize > 0)
     {
         unsigned int serverIDSize;
@@ -233,11 +231,12 @@ int rpcTerminate()
 int sendExecuteToServers(char * name, int*argTypes, void**args, list<service_info> &l)
 {
     list<service_info>::iterator it = l.begin();
-    while(it != l.end())
-    {
+    for (list<service_info>::iterator it = l.begin(); it != l.end(); it++) {
         service_info s = *it;
         int serverSocketFd = setupSocketAndReturnDescriptor(s.server_identifier.c_str(), s.port);
-        if(serverSocketFd <0) continue;
+        if(serverSocketFd <0) {
+            continue;
+        }
         int n = sendExecuteRequest(serverSocketFd,name, argTypes, args);
 
         close(serverSocketFd);
@@ -246,6 +245,7 @@ int sendExecuteToServers(char * name, int*argTypes, void**args, list<service_inf
 
         it++;
     }
+
     return -1;
 }
 int rpcCacheCall(char* name, int* argTypes, void** args)
@@ -263,6 +263,7 @@ int rpcCacheCall(char* name, int* argTypes, void** args)
 
         if(n == 0) return 0;
     }
+    cachedServicesDictionary.erase(key);
 
     // else fetch new servers from binder
     // send request
@@ -290,9 +291,10 @@ int rpcCacheCall(char* name, int* argTypes, void** args)
     n = r.receiveMessageGivenSize(messageSize, buffer);
     if(n < 0) return n;
 
+
+
     if(type == LOC_CACHE_SUCCESS)
     {
-
         n = handleLocCacheCall(messageSize, buffer, key); // updates cache
     }
     else if(type == LOC_CACHE_FAILURE)
@@ -311,11 +313,8 @@ int rpcCacheCall(char* name, int* argTypes, void** args)
         n = sendExecuteToServers(name, argTypes, args, l);
 
         return n;
-
     }
-    else return FUNCTION_NOT_AVAILABLE;
-
-
-    //
-
+    else {
+        return FUNCTION_NOT_AVAILABLE;
+    }
 }
