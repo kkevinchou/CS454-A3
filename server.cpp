@@ -64,6 +64,8 @@ int main(int argc, char *argv[]) {
   /* call rpcExecute */
   rpcExecute();
 
+  cerr << "MEOW" << endl;
+
 
   /* return */
   return 0;

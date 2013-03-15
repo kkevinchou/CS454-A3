@@ -299,7 +299,6 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 int rpcExecute()
 {
 	if(registeredFunctions.size() == 0) return -1; // no functions to serve
-    printSettings(localSocketFd);
 
     int max_fd = localSocketFd;
     fd_set master_set, working_set;
