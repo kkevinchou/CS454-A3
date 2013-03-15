@@ -19,15 +19,11 @@ bool operator == (const server_info &l, const server_info &r) {
 
 bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r)
 {
-    // cerr << "operator <!" << endl;
     if(l.name == r.name)
     {
         int i = 0;
         int lArgs = l.argTypes[i];
         int rArgs = r.argTypes[i];
-
-        // cerr << "lArgs = " << lArgs << endl;
-        // cerr << "rArgs = " << rArgs << endl;
 
         // structs with less args are smaller
         // structs with the same args are the same
@@ -41,7 +37,6 @@ bool operator < (const rpcFunctionKey &l, const rpcFunctionKey &r)
 
             if (((lArgs & 0xFFFF0000) != (rArgs & 0xFFFF0000)) || (lArraySize == 0 && rArraySize != 0) || (lArraySize != 0 && rArraySize == 0))
             {
-                // cerr << "DIFF : " << "lArgs = " << lArgs << ", " << "rArgs = " << rArgs << endl;
                 return lArgs < rArgs;
             }
             i++;

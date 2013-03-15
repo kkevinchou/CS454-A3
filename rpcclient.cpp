@@ -55,15 +55,12 @@ int connectToBinder() {
 
     if(binderAddressString == NULL)
     {
-        cerr << "ERROR: BINDER_ADDRESS environment variable not set."<< endl;
         return INIT_UNSET_BINDER_ADDRESS;
     }
     if(binderPortString == NULL)
     {
-        cerr << "ERROR: BINDER_PORT environment variable not set." << endl;
         return INIT_UNSET_BINDER_PORT;
     }
-    cerr << "connecting to : " << binderAddressString << ":" << binderPortString << endl;
     binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
     if (binderSocketFd < 0) {
@@ -92,23 +89,14 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
 
     unsigned int messageSize = getClientServerMessageLength(name, argTypes, args);
 
-
-
-    if(debug)
-    {
-        cout << endl;
-        cout << "Name: " << name<<endl;
-    }
     // create buffer for full message
     char message[messageSize];
 
-   insertClientServerMessageToBuffer(message, name, argTypes, args);
-
+    insertClientServerMessageToBuffer(message, name, argTypes, args);
 
     // send remote procedure call
     int sendResult = s.sendMessage(messageSize, EXECUTE, message);
     if(sendResult != 0) return sendResult;
-    if(debug) cout << " ...Listening for reply..."<<endl;
     // listen for a reply
     Receiver r(serverSocketFd);
     int n = r.receiveMessageSize(messageSize);
@@ -116,7 +104,6 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
     MessageType type;
     n = r.receiveMessageType(type);
     if(n < 0) return n;
-    if(debug)cout << "Received "<< messageSize << " "<<type<<endl;
 
     char replyMessage[messageSize];
     n = r.receiveMessageGivenSize(messageSize, replyMessage);
@@ -128,7 +115,6 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
         case EXECUTE_SUCCESS:
         {
             // extract argument data
-            if(debug)cout << "Success!"<<endl;
             char * replyMessageP = replyMessage;
             unsigned int argTypesLength = b.returnArgTypesLength(argTypes);
             unsigned int nameSize;
@@ -145,7 +131,6 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
             else
             {
                 returnCode = WRONG_FUNCTION_NAME_RETURNED;
-                cerr << "WARNING: wrong function name returned: " << functionName<<endl;
             }
 
 
@@ -154,12 +139,10 @@ int sendExecuteRequest(int serverSocketFd,char* name, int* argTypes, void**args)
         case EXECUTE_FAILURE:
         {
             // extract error code
-            if(debug)cout << "Failure"<<endl;
             b.extractInt(replyMessage, returnCode);
         }
         break;
         default:
-            cerr << "WARNING: Server returned an invalid response to remote prodcure call."<<endl;
             returnCode = RECEIVE_INVALID_MESSAGE_TYPE;
         break;
     }
@@ -199,7 +182,6 @@ int processLocResponse(string &serverID, unsigned short &port) {
         bufferPointer = b.extractUnsignedShort(bufferPointer, port);
         return 0;
     } else if (msgType == LOC_FAILURE) {
-        cerr << "LOCATION REQUEST FAILURE" << endl;
         int reasonCode = 0;
         if(messageSize > 0)
         {
@@ -208,13 +190,11 @@ int processLocResponse(string &serverID, unsigned short &port) {
         }
         return reasonCode;
     } else {
-        cerr << "UNEXPECTED MSGTYPE IN processLocResponse()" << endl;
         return RECEIVE_INVALID_MESSAGE_TYPE;
     }
 }
 
 int rpcCall(char* name, int* argTypes, void** args) {
-    // cerr << "RPC CALL" << endl;
     int locRequestCode = sendLocRequest(string(name), argTypes);
 
     if(locRequestCode < 0) return locRequestCode;
@@ -227,10 +207,6 @@ int rpcCall(char* name, int* argTypes, void** args) {
         return locCode;
     }
 
-  //  cerr << "SERVER : " << serverID << endl;
-  //  cerr << "PORT : " << port << endl;
-    // char * binderAddressString = getenv ("BINDER_ADDRESS");
-    // char * binderPortString = getenv("BINDER_PORT");
     int serverSocketFd = setupSocketAndReturnDescriptor(serverID.c_str(), port);
 
     int n = sendExecuteRequest(serverSocketFd,name, argTypes, args);
@@ -260,10 +236,8 @@ int sendExecuteToServers(char * name, int*argTypes, void**args, list<service_inf
     while(it != l.end())
     {
         service_info s = *it;
-        if(debug)cout << "Sending execute to "<<s.server_identifier << " " << s.port<<endl;
         int serverSocketFd = setupSocketAndReturnDescriptor(s.server_identifier.c_str(), s.port);
         if(serverSocketFd <0) continue;
-        cout << "FD: "<<serverSocketFd<<endl;
         int n = sendExecuteRequest(serverSocketFd,name, argTypes, args);
 
         close(serverSocketFd);
@@ -272,7 +246,6 @@ int sendExecuteToServers(char * name, int*argTypes, void**args, list<service_inf
 
         it++;
     }
-cout << "No servers"<<endl;
     return -1;
 }
 int rpcCacheCall(char* name, int* argTypes, void** args)
@@ -293,7 +266,7 @@ int rpcCacheCall(char* name, int* argTypes, void** args)
 
     // else fetch new servers from binder
     // send request
-    
+
     int status = connectToBinder();
 
     if (status != 0) return status;
@@ -319,7 +292,7 @@ int rpcCacheCall(char* name, int* argTypes, void** args)
 
     if(type == LOC_CACHE_SUCCESS)
     {
-       
+
         n = handleLocCacheCall(messageSize, buffer, key); // updates cache
     }
     else if(type == LOC_CACHE_FAILURE)

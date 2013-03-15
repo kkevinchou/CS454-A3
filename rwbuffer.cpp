@@ -48,8 +48,6 @@ unsigned int RWBuffer::returnArgTypesLength(char * bufferP)
 
 char * RWBuffer::copyBufferToConvertor(char * bufferP, unsigned int length)
 {
-	if(length > 8) cerr << "WARNING: union DataTypeConvertor may not work correctly."<<endl;
-
     for(unsigned int i = 0; i < length; i++)
     {
         _convertor.charArray[i] = *bufferP;
@@ -179,7 +177,6 @@ char * RWBuffer::extractString(char * bufferP, string &s)
     string r = "";
     while(*bufferP != '\0')
     {
-        //cout << "extracting "<< *bufferP<<endl;
         r += *bufferP;
         bufferP++;
     }

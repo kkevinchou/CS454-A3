@@ -60,9 +60,7 @@ ReasonCode addService(string name, int argTypes[], string serverID, unsigned sho
         int *memArgTypes = copyArgTypes(argTypes);
         key = rpcFunctionKey(name, memArgTypes);
         servicesDictionary[key] = new list<service_info *>();
-        cerr << "NEW KEY" << endl;
     } else {
-        cerr << "OLD KEY" << endl;
     }
 
     list<service_info *> *hostList = servicesDictionary[key];
@@ -110,28 +108,21 @@ void removeServer(int serverFd) {
 
     server_info *server = fdToServerMap[serverFd];
 
-    // cerr << "roundRobinQueue before size = " << roundRobinQueue.size() << endl;
     roundRobinQueue.remove(server);
-    // cerr << "roundRobinQueue after size = " << roundRobinQueue.size() << endl;
 
-    // cerr << "fdToServerMap before size = " << fdToServerMap.size() << endl;
     map<int, server_info *>::iterator it = fdToServerMap.find(serverFd);
     if (it != fdToServerMap.end()) {
         fdToServerMap.erase(it);
     }
-    // cerr << "fdToServerMap after size = " << fdToServerMap.size() << endl;
 
     for (map<rpcFunctionKey, list<service_info *> * >::iterator it = servicesDictionary.begin(); it != servicesDictionary.end(); it++) {
         list<service_info *> *hostList = it->second;
         for (list<service_info *>::iterator it2 = hostList->begin(); it2 != hostList->end(); it2++) {
             if (*server == *(*it2)) {
-                // cerr << "hostList before size = " << hostList->size() << endl;
                 hostList->erase(it2);
-                // cerr << "hostList after size = " << hostList->size() << endl;
                 break;
             }
         }
-        // TODO : Clean up the memory for the key when the host list is empty?
     }
 
     delete server;
@@ -191,9 +182,6 @@ bool rpcArraySizeOkay(const rpcFunctionKey l, const rpcFunctionKey r) {
     {
         int lArraySize = lArgs & 0xFFFF;
         int rArraySize = rArgs & 0xFFFF;
-
-        cerr << "lArraySize = " << lArraySize << endl;
-        cerr << "rArraySize = " << rArraySize << endl;
 
         if (lArraySize > rArraySize)
         {
@@ -268,7 +256,6 @@ void handleLocCacheRequest(Receiver &receiver, Sender &sender, char buffer[], un
         {
             // found
             list<service_info *> * lp = servicesDictionary[key];
-            cerr << "CACHE LOC REQ FOUND!" << endl;
 
             sender.sendLocCacheSuccessMessage(*lp);
 
@@ -276,7 +263,6 @@ void handleLocCacheRequest(Receiver &receiver, Sender &sender, char buffer[], un
         }
         else
         {
-            cerr << "CACHE LOC REQ NOT FOUND!" << endl;
             sender.sendLocCacheFailureMessage(FUNCTION_NOT_AVAILABLE);
         }
     } catch (int e) {
@@ -297,7 +283,7 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
 
         string name(nameChar);
 
-        
+
 
         unsigned int argTypesLength = (bufferSize - nameSize) / 4;
         int argTypes[argTypesLength];
@@ -308,12 +294,8 @@ void handleLocRequest(Receiver &receiver, Sender &sender, char buffer[], unsigne
         server_info *location = getRoundRobinServer(key);
 
         if (location != NULL) {
-            cerr << "LOC REQ FOUND!" << endl;
-            cerr << "server_identifier = " << location->server_identifier << endl;
-            cerr << "port = " << location->port << endl;
             sender.sendLocSuccessMessage(location->server_identifier, location->port);
         } else {
-            cerr << "LOC REQ NOT FOUND!" << endl;
             sender.sendLocFailureMessage(FUNCTION_NOT_AVAILABLE);
         }
     } catch (int e) {
@@ -332,7 +314,6 @@ void handleTerminateRequest() {
 
     list<int> removeList;
     while (fdToServerMap.size() > 0) {
-        cerr << "Waiting on " << fdToServerMap.size() << " server(s) to terminate" << endl;
         for (map<int, server_info *>::iterator it = fdToServerMap.begin(); it != fdToServerMap.end(); it++) {
             int serverFd = it->first;
             server_info *server = it->second;
@@ -353,8 +334,6 @@ void handleTerminateRequest() {
 
         sleep(1);
     }
-
-    cerr << "All servers have terminated" << endl;
 
     // TODO: clean up memory
 }
@@ -391,7 +370,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
     } else {
         unsigned int size = chunkInfo[clientSocketFd];
         char buffer[size];
-        cout << "Bimder receiving..."<<endl;
         if (receiver.receiveMessageGivenSize(size, buffer) == 0)
         {
             chunkInfo[clientSocketFd] = 0;
@@ -406,7 +384,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
             } else if (msgType == TERMINATE) {
                 handleTerminateRequest();
             } else {
-                cerr << "[BINDER] UNHANDLED MESSAGE TYPE: " << static_cast<int>(msgType) << endl;
             }
         }
         else
@@ -416,7 +393,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
     }
 
     if (closed) {
-        cerr << "[BINDER] Socket detected to be closed!" << endl;
         chunkInfo[clientSocketFd] = 0;
         removeServer(clientSocketFd);
         FD_CLR(clientSocketFd, master_set);
@@ -427,7 +403,6 @@ void handleRequest(int clientSocketFd, fd_set *master_set) {
 int main(int argc, char *argv[]) {
     int localSocketFd = createSocket();
     if (localSocketFd < 0) {
-        cerr << "ERROR: Failed to open socket" << endl;
         return SOCKET_OPEN_FAILURE;
     }
 
@@ -446,10 +421,8 @@ int main(int argc, char *argv[]) {
         int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
 
         if (selectResult < 0) {
-            cerr << "ERROR: Select failed" << endl;
             return SELECT_FAILED;
         } else if (selectResult == 0) {
-            cerr<<"ERROR: Select timed out"<< endl;
             return SELECT_TIMED_OUT;
         }
 

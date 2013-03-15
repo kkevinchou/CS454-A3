@@ -16,14 +16,6 @@ int Sender::sendArray(unsigned int length, char data[])
 	char * bytesPtr = data;
 	unsigned int sendSize = length;
 	int n;
-	if(debug)
-	{
-		 for(unsigned int i = 0; i < length; i++)
-		 {
-		 	cout << (int)data[i] << " ";
-		 }
-		 cout << endl;
-	}
 
 	while(sendSize > 0)
 	{
@@ -38,7 +30,6 @@ int Sender::sendArray(unsigned int length, char data[])
 		}
 		else if(n<0)
 		{
-			cerr << "ERROR: send returned an error "<<errno<< endl;
 			return n;
 		}
 
@@ -234,7 +225,7 @@ int Sender::sendLocCacheRequestMessage(string functionName, int*argTypes)
 	return sendMessage(messageSize, LOC_CACHE_REQUEST, buffer);
 
 }
-int Sender::sendLocCacheFailureMessage(ReasonCode reasonCode) 
+int Sender::sendLocCacheFailureMessage(ReasonCode reasonCode)
 {
 		unsigned int reasonCodeSize = 4;
 

@@ -39,16 +39,13 @@ int rpcInit() {
 
     if(binderAddressString == NULL)
 	{
-		cerr << "ERROR: BINDER_ADDRESS environment variable not set."<< endl;
 		return INIT_UNSET_BINDER_ADDRESS;
 	}
     if(binderPortString == NULL)
 	{
-		cerr << "ERROR: BINDER_PORT environment variable not set."<< endl;
 		return INIT_UNSET_BINDER_PORT;
 	}
 
-    cerr << "connecting to : " << binderAddressString << ":" << binderPortString << endl;
     binderSocketFd = setupSocketAndReturnDescriptor(binderAddressString, binderPortString);
 
 	signal(SIGPIPE, SIG_IGN);
@@ -58,7 +55,6 @@ int rpcInit() {
 
     localSocketFd = createSocket();
     listenOnSocket(localSocketFd);
-    printSettings(localSocketFd);
 
     if (localSocketFd < 0) {
         return INIT_LOCAL_SOCKET_FAILURE;
@@ -94,10 +90,6 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	int argTypesLength = 0;
 	while (argTypes[argTypesLength++]);
 
-	//cerr << "hostname : " << hostname.size() << endl;
-	//cerr << "funcName : " << funcName.size() << endl;
-	//cerr << "argTypesLength : " << argTypesLength << endl;
-
 	int n = s.sendRegisterMessage(hostname, port, funcName, argTypes);
 	if(n < 0) return n;
 
@@ -115,7 +107,6 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 
 	if(type == REGISTER_SUCCESS)
 	{
-		cout << "Successfully registered: "<< name << endl;
 		int reasonCode = 0;
 		if(	messageSize > 0)
 		{
@@ -128,14 +119,12 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 
 		struct rpcFunctionKey k(string(name), argTypes);
 		registeredFunctions[k] = f;
-		cout << "Size is: "<< registeredFunctions.size() << endl;
 
 		return reasonCode;
 	}
 	else if(type == REGISTER_FAILURE)
 	{
 		int errorCode = 0;
-		cout << "Failure to register: "<< name << endl;
 		if(	messageSize > 0)
 		{
 			char buffer[messageSize];
@@ -149,11 +138,8 @@ int rpcRegister(char *name, int *argTypes, skeleton f) {
 	}
 	else
 	{
-		cerr << "Unknown message type received when expecting REGISTER reply." << endl;
 		return RECEIVE_INVALID_MESSAGE_TYPE;
 	}
-
-	
 
 	return 0;
 }
@@ -170,48 +156,23 @@ void removeThreadFromList(pthread_t key)
 }
 void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messageSize)
 {
-	
-	if(debug){
-		cout << endl;
-		cout << "Received an EXECUTE message of size "<<messageSize<<": "<<endl;
-	}
-	for(unsigned int i = 0; i < messageSize; i++)
-	{
-		cout << (int)message[i]<<" ";
-	}
-	cout << endl;
 	RWBuffer b;
-	
- // string recvStr(buffer, buffer+size);
-	// cout << recvStr << endl;
-
-	// Sender s(clientSocketFd);
-	// s.sendMessage(recvStr);
-	//size_t nameSize = strlen(message);
-	//char name[nameSize+1];
-
 
 	char * bufferPointer = message;
 
-	//bufferPointer = b.extractString(bufferPointer, name);
-	//bufferPointer = b.extractCharArray(bufferPointer, name, nameSize+1);
 	unsigned int nameSize;
 	bufferPointer = b.extractUnsignedInt(bufferPointer, nameSize);
 	char nameChar[nameSize];
 
 	bufferPointer = b.extractCharArray(bufferPointer, nameChar, nameSize);
 	string name(nameChar);
-	if(debug)cout << "Name: "<<name<<endl;
-	
+
 
 	unsigned int argTypesLength = b.returnArgTypesLength(bufferPointer);
 	int argTypes[argTypesLength];
 	void * args[argTypesLength];
 
 	extractArgumentsMessage(bufferPointer, argTypes, args, argTypesLength, true);
-
-	// handle request
-	// name, argTypes, args
 
 	struct rpcFunctionKey k(name, argTypes);
 	skeleton skel = registeredFunctions[k];
@@ -220,7 +181,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 
 	Sender s(clientSocketFd);
 
-	if(skel == NULL){ 
+	if(skel == NULL){
 		// error, function not found. send fail message
 		failCode = EXECUTE_UNKNOWN_SKELETON;
 	}
@@ -234,26 +195,7 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 			char returnMessage[messageSize];
 
 			insertClientServerMessageToBuffer(returnMessage, name.c_str(), argTypes, args);
-		    if(debug)
-		    {
-		        cout << endl;
-		        cout << "2nd Name: " << name<<endl;
-		    }
-
-		    if(debug)
-		    {
-		        cout << "Sending an EXECUTE_SUCCESS message of size "<<messageSize << ": "<<endl;
-		       for(unsigned int i = 0; i < messageSize; i++)
-		        {
-		            cout << (int)returnMessage[i] << " ";
-
-		        }
-		        cout << endl;
-		    }
-		    cout << "Sending success"<<endl;
 		    int r = s.sendMessage(messageSize, EXECUTE_SUCCESS, returnMessage);
-		    cout << "Done sending success"<<endl;
-		    if(r != 0) cerr << "WARNING: Send EXECUTE_SUCESS message failed: "<<r <<endl;
 		}
 		else
 		{
@@ -268,7 +210,6 @@ void handleExecuteMessage(int clientSocketFd,char * message, unsigned int messag
 		char failureCodeMessage[4];
 		b.insertIntToBuffer(failCode, failureCodeMessage);
 		int r = s.sendMessage(4, EXECUTE_FAILURE, failureCodeMessage);
-		if(r != 0) cerr << "WARNING: Send EXECUTE_FAILURE message failed."<<endl;
 	}
 
 	cleanupArgumentsMessage(bufferPointer, argTypes, args, argTypesLength);
@@ -300,19 +241,14 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 	Receiver receiver(clientSocketFd);
     bool success = false;
 
-// if (chunkInfo[clientSocketFd] == 0) {
 	unsigned int messageSize;
 
-     //   cout << "nb" << nb << " " << numBytes<<endl;
-	cout << "Receiving request..."<<endl;
     if(receiver.receiveMessageSize(messageSize) == 0 )
     {
         MessageType type;
         if(receiver.receiveMessageType(type) == 0)
         {
         	 if (binderSocketFd != clientSocketFd && type == EXECUTE) {
-	            cout << "Received execute message"<<endl;
-
 
 		        char buffer[messageSize];
 		        if (receiver.receiveMessageGivenSize(messageSize, buffer) == 0)
@@ -327,7 +263,6 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 		        	// copy memory over
 		        	memcpy ( bufferCopy, buffer, messageSize);
 
-
 		        	threadArguments[0] = (void *)clientSocketFdCopy;
 		        	threadArguments[1] = (void *)messageSizeCopy;
 		        	threadArguments[2] = (void *)bufferCopy;
@@ -335,8 +270,6 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 		        	pthread_t sendingThread ;
     				pthread_create(&sendingThread, NULL, &handleExecuteMessageThreadFunction, (void *)threadArguments);
     				_runningThreads[sendingThread] = true;
-		           	//handleExecuteMessage(clientSocketFd,buffer, messageSize);
-
 
 		            success = true;
 		        }
@@ -344,24 +277,12 @@ int handleRequest(int clientSocketFd, fd_set *master_set, map<int, unsigned int>
 		    else if(binderSocketFd == clientSocketFd && type == TERMINATE)
 		    {
 		    	// we received a terminate message from the binder, so we kill ourself
-		    	cout << "Terminate message received from binder"<<endl;
 		    	return -1;
 		    }
-		    else
-		    {
-		    	cout << "C"<<endl;
-		    }
-        }else cout << "B"<<endl;
-
-       
-
-    }
-    else {
-    	cout << "A"<<endl;
+        }
     }
 
     if (!success) {
-    	cout << "Client socket closed "<<clientSocketFd<<endl;
         chunkInfo[clientSocketFd] = 0;
         FD_CLR(clientSocketFd, master_set);
         close(clientSocketFd);
@@ -385,19 +306,16 @@ int rpcExecute()
     FD_ZERO(&master_set);
     FD_SET(localSocketFd, &master_set);
     FD_SET(binderSocketFd, &master_set);
-//cout<< "Binder socket: "<< binderSocketFd << endl;
     map<int, unsigned int> chunkInfo;
 
     while (!shouldTerminate) {
 
-    		 memcpy(&working_set, &master_set, sizeof(master_set));
+    		memcpy(&working_set, &master_set, sizeof(master_set));
 	        int selectResult = select(max_fd + 1, &working_set, NULL, NULL, NULL);
 
 	        if (selectResult < 0) {
-	            cerr << "ERROR: Select failed" << endl;
 	            return SELECT_FAILED;
 	        } else if (selectResult == 0) {
-	            cerr<<"ERROR: Select timed out"<< endl;
 	            return SELECT_TIMED_OUT;
 	        }
 
@@ -405,27 +323,24 @@ int rpcExecute()
 	            if (FD_ISSET(i, &working_set)) {
 	                if (i != localSocketFd) {
 	                    int clientSocketFd = i;
-	                    cout << "handle"<<endl;
 	                    int requestCode = handleRequest(clientSocketFd, &master_set, chunkInfo);
 	                    if(requestCode < 0)
 	                    {
 	                    	// received a termination signal from binder
 	                    	// break out of the execute loop
-	                    	//cout << "Should terminate server after all threads are done" << endl;
 	                    	shouldTerminate = true;
 	                    	break;
 
 	                    }
 	                } else {
-	                    //cout << "accept connection"<<endl;
 	                    int newSocketFd = acceptConnection(localSocketFd);
 	                    if(newSocketFd > max_fd) max_fd = newSocketFd;
 	                    FD_SET(newSocketFd, &master_set);
 	                }
 	            }
 	        }
-    	
-       
+
+
     }
 
     vector<pthread_t> livingThreads;
